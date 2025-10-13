@@ -1,0 +1,73 @@
+---
+title: "Introduction"
+description: "Welcome to our documentation system"
+---
+
+# Introduction to Our Documentation System
+
+Welcome to our modern documentation system built with **MDX**, **ShadCN**, and **React**!
+
+<Alert type="info" title="What is MDX?">
+  MDX allows you to write JSX directly in your markdown files, enabling
+  interactive documentation.
+</Alert>
+
+## Features
+
+<FeatureGrid>
+  <Feature
+    title="Interactive Components"
+    description="Use React components directly in your markdown"
+    icon={<Button size="sm">Click me</Button>}
+  />
+  <Feature
+    title="Beautiful Styling"
+    description="Pre-built components with consistent design"
+  />
+  <Feature
+    title="Fast Search"
+    description="Quick content discovery with fuzzy search"
+  />
+  <Feature
+    title="Mobile Responsive"
+    description="Works perfectly on all devices"
+  />
+</FeatureGrid>
+
+## Getting Started
+
+<Steps>
+  <Step>
+    **Install Dependencies** - Set up your project with the required packages
+    
+    <CodeBlock language="bash">
+npm install @mdx-js/mdx @mdx-js/react
+    </CodeBlock>
+  </Step>
+  
+  <Step>
+    **Configure MDX** - Set up your build system to process MDX files
+    
+    <CodeBlock language="javascript" title="vite.config.js">
+```js
+import mdx from '@mdx-js/rollup'
+
+export default {
+  plugins: [mdx()]
+}
+```
+    </CodeBlock>
+  </Step>
+  
+  <Step>
+    **Create Content** - Start writing your documentation with MDX
+    
+    <Alert type="success">
+    You're ready to start building amazing documentation!
+    </Alert>
+  </Step>
+</Steps>
+
+---
+
+Ready to dive deeper? Check out our [Quick Start Guide](/docs/getting-started/quick-start).

@@ -1,0 +1,109 @@
+---
+title: "API Endpoints"
+description: "Complete API reference for all available endpoints"
+---
+
+# API Endpoints
+
+## User Management
+
+<ApiReference
+  method="GET"
+  endpoint="/api/users"
+  description="Retrieve a list of all users"
+  parameters={[
+    { name: "page", type: "number", description: "Page number for pagination" },
+    {
+      name: "limit",
+      type: "number",
+      description: "Number of users per page",
+      required: true,
+    },
+  ]}
+  example={`{
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "total": 100
+  }
+}`}
+/>
+
+<ApiReference
+  method="POST"
+  endpoint="/api/users"
+  description="Create a new user"
+  parameters={[
+    {
+      name: "name",
+      type: "string",
+      description: "User's full name",
+      required: true,
+    },
+    {
+      name: "email",
+      type: "string",
+      description: "User's email address",
+      required: true,
+    },
+  ]}
+  example={`{
+  "name": "Jane Smith",
+  "email": "jane@example.com"
+}`}
+/>
+
+## Authentication
+
+<Alert type="warning" title="Authentication Required">
+  All API endpoints require a valid JWT token in the Authorization header.
+</Alert>
+
+<Tabs defaultValue="curl" className="w-full">
+  <TabsList>
+    <TabsTrigger value="curl">cURL</TabsTrigger>
+    <TabsTrigger value="javascript">JavaScript</TabsTrigger>
+    <TabsTrigger value="python">Python</TabsTrigger>
+  </TabsList>
+  
+  <TabsContent value="curl">
+    <CodeBlock language="bash">
+curl -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+     -X GET https://api.example.com/users
+    </CodeBlock>
+  </TabsContent>
+  
+  <TabsContent value="javascript">
+    <CodeBlock language="javascript">
+```js
+const response = await fetch('https://api.example.com/users', {
+  headers: {
+    'Authorization': 'Bearer YOUR_JWT_TOKEN'
+  }
+});
+const data = await response.json();
+```
+    </CodeBlock>
+  </TabsContent>
+  
+  <TabsContent value="python">
+    <CodeBlock language="python">
+```python
+import requests
+
+headers = {'Authorization': 'Bearer YOUR_JWT_TOKEN'}
+response = requests.get('https://api.example.com/users', headers=headers)
+data = response.json()
+
+```
+</CodeBlock>
+
+  </TabsContent>
+</Tabs>
+```

@@ -1,0 +1,41 @@
+{
+   "theme": {
+    "primary": "#2563eb",
+    "secondary": "#64748b", 
+    "accent": "#7c3aed"
+  },
+  "branding": {
+    "title": "My Documentation",
+    "logo": "/logo.svg",
+    "favicon": "/favicon.ico"
+  },
+  "navigation": [
+    {
+      "title": "Getting Started",
+      "children": [
+        { "title": "Introduction", "href": "/docs/getting-started/introduction" },
+        { "title": "Installation", "href": "/docs/getting-started/installation" },
+        { "title": "Quick Start", "href": "/docs/getting-started/quick-start" }
+      ]
+    },
+    {
+      "title": "Components",
+      "children": [
+        { "title": "Buttons", "href": "/docs/components/buttons" },
+        { "title": "Forms", "href": "/docs/components/forms" },
+        { "title": "Cards", "href": "/docs/components/cards" }
+      ]
+    },
+    {
+      "title": "API Reference",
+      "children": [
+        { "title": "Authentication", "href": "/docs/api/authentication" },
+        { "title": "Endpoints", "href": "/docs/api/endpoints" }
+      ]
+    },
+    {
+      "title": "Examples",
+      "href": "/docs/examples"
+    }
+  ]
+}
