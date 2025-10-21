@@ -13,29 +13,29 @@
     {
       "title": "Getting Started",
       "children": [
-        { "title": "Introduction", "href": "/docs/getting-started/introduction" },
-        { "title": "Installation", "href": "/docs/getting-started/installation" },
-        { "title": "Quick Start", "href": "/docs/getting-started/quick-start" }
+        { "title": "Introduction", "href": "/getting-started/introduction" },
+        { "title": "Installation", "href": "/getting-started/installation" },
+        { "title": "Quick Start", "href": "/getting-started/quick-start" }
       ]
     },
     {
       "title": "Components",
       "children": [
-        { "title": "Buttons", "href": "/docs/components/buttons" },
-        { "title": "Forms", "href": "/docs/components/forms" },
-        { "title": "Cards", "href": "/docs/components/cards" }
+        { "title": "Buttons", "href": "/components/buttons" },
+        { "title": "Forms", "href": "/components/forms" },
+        { "title": "Cards", "href": "/components/cards" }
       ]
     },
     {
       "title": "API Reference",
       "children": [
-        { "title": "Authentication", "href": "/docs/api/authentication" },
-        { "title": "Endpoints", "href": "/docs/api/endpoints" }
+        { "title": "Authentication", "href": "/api/authentication" },
+        { "title": "Endpoints", "href": "/api/endpoints" }
       ]
     },
     {
       "title": "Examples",
-      "href": "/docs/examples"
+      "href": "/examples"
     }
   ]
 }

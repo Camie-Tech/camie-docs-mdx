@@ -4,7 +4,7 @@ import {
   ThemeCustomizer,
 } from "@/components/providers/ThemeProvider";
 import { CustomMDXProvider } from "@/components/providers/MDXProvider";
-import { SystemRoutes } from "./Routing";
+import { SystemRoutes } from "./SystemRoutes";
 
 function App() {
   return (
