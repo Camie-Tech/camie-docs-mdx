@@ -8,7 +8,7 @@
     "prebuild": "node scripts/generateRoutingPages.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
     "start": "vite preview --port $PORT"
   },
   "dependencies": {
