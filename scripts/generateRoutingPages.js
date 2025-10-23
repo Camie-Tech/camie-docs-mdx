@@ -1,14 +1,9 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
-/**
- * Generates routing code for all .mdx files in the content directory.
- * The route path will be /<folder>/<filename>.
- */
 function generateRoutingPages(contentDir = "src/content") {
   const routes = [];
 
-  // Recursively walk through the content folder
   function walkDir(dir) {
     const files = fs.readdirSync(dir);
     
@@ -24,12 +19,10 @@ function generateRoutingPages(contentDir = "src/content") {
         const fileName = path.basename(file, ".mdx");
         const folderName = pathParts.length > 1 ? pathParts[0] : "";
 
-        // Build the import path
         const importPath = `@/${path
           .join("content", relativePath)
           .replace(/\\/g, "/")}`;
 
-        // Build the route path
         const routePath = `/${folderName}/${fileName}`;
         const componentName =
           fileName.charAt(0).toUpperCase() + fileName.slice(1);
@@ -41,7 +34,6 @@ function generateRoutingPages(contentDir = "src/content") {
 
   walkDir(contentDir);
 
-  // Build the full routing file
   const imports = routes
     .map((r) => `import ${r.componentName} from "${r.importPath}";`)
     .join("\n");
@@ -77,5 +69,4 @@ export function SystemRoutes() {
   console.log("SystemRoutes.jsx generated successfully!");
 }
 
-// Execute the function
 generateRoutingPages();
