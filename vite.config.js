@@ -72,8 +72,27 @@ export default defineConfig({
     },
   },
 
-  // Allow all hosts in preview mode
-  preview: {
-    allowedHosts: ["*"], // This allows any domain
-  },
+  // Allow all hosts in preview mode and development
+  // preview: {
+  //   host: true, // Listen on all addresses
+  //   port: 4173,
+  //   allowedHosts: [
+  //     "*", // Allow any domain
+  //     "final-arrival-docs.onrender.com", // Specifically allow your Render domain
+  //     "localhost",
+  //     "127.0.0.1"
+  //   ],
+  // },
+
+  // // Server configuration for development
+  // server: {
+  //   host: true, // Listen on all addresses
+  //   port: 5173,
+  //   allowedHosts: [
+  //     "*", // Allow any domain
+  //     "final-arrival-docs.onrender.com", // Specifically allow your Render domain
+  //     "localhost",
+  //     "127.0.0.1"
+  //   ],
+  // },
 });

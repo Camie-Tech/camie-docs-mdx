@@ -9,7 +9,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "vite preview --host 0.0.0.0 --port $PORT"
+    "start": "vite preview"
   },
   "dependencies": {
     "@mdx-js/mdx": "^3.1.1",
