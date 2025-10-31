@@ -62,7 +62,7 @@ export default defineConfig({
       providerImportSource: "@mdx-js/react",
     }),
     react({
-      include: /\.(jsx|js|tsx|ts)$/, // Include MDX files
+      include: /\.(jsx|js|tsx|ts)$/,
     }),
     tailwindcss(),
   ],
@@ -70,5 +70,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+  },
+
+  // Allow all hosts in preview mode
+  preview: {
+    allowedHosts: ["*"], // This allows any domain
   },
 });
