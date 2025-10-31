@@ -21,18 +21,28 @@ export function generateRoutingPages(contentDir = "src/content") {
         const relativePath = path.relative(contentDir, fullPath);
         const pathParts = relativePath.split(path.sep);
         const fileName = path.basename(file, ".mdx");
-        const folderName = pathParts.length > 1 ? pathParts[0] : "";
+        // Get the full folder path, not just the first folder
+        const folderPath = pathParts.slice(0, -1).join('/');
 
-        // Build the import path (e.g. "@/content/getting-started/introduction.mdx")
+        // Build the import path (e.g. "@/content/getting-started/test/new.mdx")
         const importPath = `@/${path
           .join("content", relativePath)
           .replace(/\\/g, "/")}`;
 
-        // Build the route path (e.g. "/docs/getting-started/introduction")
-        const routePath = `/${folderName}/${fileName}`;
+        // Build the route path (e.g. "/getting-started/test/new" or "/manual" for root files)
+        const routePath = folderPath 
+          ? `/${folderPath}/${fileName}` 
+          : `/${fileName}`;
 
-        const componentName =
-          fileName.charAt(0).toUpperCase() + fileName.slice(1);
+        // Convert filename to valid JavaScript identifier (camelCase)
+        const componentName = fileName
+          .split('-')
+          .map((word, index) => 
+            index === 0 
+              ? word.charAt(0).toUpperCase() + word.slice(1)
+              : word.charAt(0).toUpperCase() + word.slice(1)
+          )
+          .join('');
 
         routes.push({ importPath, routePath, componentName });
       }
