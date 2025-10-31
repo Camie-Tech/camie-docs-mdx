@@ -31,14 +31,25 @@ function generateRoutingPages(contentDir = "src/content") {
           : `/${fileName}`;
 
         // Convert filename to valid JavaScript identifier (camelCase)
-        const componentName = fileName
-          .split("-")
+        // Include folder path to make component names unique
+        const componentPath = folderPath ? `${folderPath}/${fileName}` : fileName;
+        let componentName = componentPath
+          .replace(/[\/\\]/g, "_") // Replace slashes with underscores
+          .replace(/\s+/g, "_") // Replace spaces with underscores
+          .replace(/[^a-zA-Z0-9_]/g, "_") // Replace any non-alphanumeric characters with underscores
+          .split(/[-_]/) // Split on hyphens and underscores
+          .filter(word => word.length > 0) // Remove empty parts
           .map((word, index) =>
             index === 0
               ? word.charAt(0).toUpperCase() + word.slice(1)
               : word.charAt(0).toUpperCase() + word.slice(1)
           )
           .join("");
+
+        // Ensure component name doesn't start with a number (invalid JS identifier)
+        if (/^[0-9]/.test(componentName)) {
+          componentName = `Component${componentName}`;
+        }
 
         routes.push({ importPath, routePath, componentName });
       }
