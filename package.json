@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "generate-api-pages": "node scripts/generateAPIPages.js",
     "generate-meta": "node scripts/generateMeta.js",
     "generate-routes": "node scripts/generateRoutingPages.js",
-    "prebuild": "npm run generate-meta && npm run generate-routes",
+    "prebuild": "npm run generate-api-pages && npm run generate-meta && npm run generate-routes",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",

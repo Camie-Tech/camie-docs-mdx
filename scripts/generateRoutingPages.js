@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
 
-function generateRoutingPages(contentDir = "src/content") {
+function generateRoutingPages(contentDir = "src/content", apiPagesDir = "src/pages/api-reference") {
   const routes = [];
 
-  function walkDir(dir) {
+  // Scan content directory for MDX files
+  function walkContentDir(dir) {
     const files = fs.readdirSync(dir);
 
     for (const file of files) {
@@ -12,41 +13,32 @@ function generateRoutingPages(contentDir = "src/content") {
       const stat = fs.statSync(fullPath);
 
       if (stat.isDirectory()) {
-        walkDir(fullPath);
+        walkContentDir(fullPath);
       } else if (file.endsWith(".mdx")) {
         const relativePath = path.relative(contentDir, fullPath);
         const pathParts = relativePath.split(path.sep);
         const fileName = path.basename(file, ".mdx");
-        // Get the full folder path, not just the first folder
         const folderPath = pathParts.slice(0, -1).join("/");
 
-        // Build the import path (e.g. "@/content/getting-started/test/new.mdx")
         const importPath = `@/${path
           .join("content", relativePath)
           .replace(/\\/g, "/")}`;
 
-        // Build the route path (e.g. "/getting-started/test/new" or "/manual" for root files)
         const routePath = folderPath
           ? `/${folderPath}/${fileName}`
           : `/${fileName}`;
 
-        // Convert filename to valid JavaScript identifier (camelCase)
-        // Include folder path to make component names unique
-        const componentPath = folderPath ? `${folderPath}/${fileName}` : fileName;
-        let componentName = componentPath
-          .replace(/[\/\\]/g, "_") // Replace slashes with underscores
-          .replace(/\s+/g, "_") // Replace spaces with underscores
-          .replace(/[^a-zA-Z0-9_]/g, "_") // Replace any non-alphanumeric characters with underscores
-          .split(/[-_]/) // Split on hyphens and underscores
-          .filter(word => word.length > 0) // Remove empty parts
+        let componentName = (folderPath ? `${folderPath}/${fileName}` : fileName)
+          .replace(/[\/\\]/g, "_")
+          .replace(/\s+/g, "_")
+          .replace(/[^a-zA-Z0-9_]/g, "_")
+          .split(/[-_]/)
+          .filter(word => word.length > 0)
           .map((word, index) =>
-            index === 0
-              ? word.charAt(0).toUpperCase() + word.slice(1)
-              : word.charAt(0).toUpperCase() + word.slice(1)
+            word.charAt(0).toUpperCase() + word.slice(1)
           )
           .join("");
 
-        // Ensure component name doesn't start with a number (invalid JS identifier)
         if (/^[0-9]/.test(componentName)) {
           componentName = `Component${componentName}`;
         }
@@ -56,7 +48,50 @@ function generateRoutingPages(contentDir = "src/content") {
     }
   }
 
-  walkDir(contentDir);
+  // Scan API pages directory for generated endpoint pages
+  function walkAPIDir(dir) {
+    if (!fs.existsSync(dir)) {
+      console.log("⚠️  No API pages directory found, skipping...");
+      return;
+    }
+
+    const files = fs.readdirSync(dir);
+
+    for (const file of files) {
+      const fullPath = path.join(dir, file);
+      const stat = fs.statSync(fullPath);
+
+      if (file === "endpoints-metadata.json") {
+        continue; // Skip metadata file
+      }
+
+      if (stat.isDirectory()) {
+        walkAPIDir(fullPath);
+      } else if (file.endsWith(".tsx")) {
+        const relativePath = path.relative(apiPagesDir, fullPath);
+        const fileName = path.basename(file, ".tsx");
+
+        const importPath = `@/pages/api-reference/${relativePath.replace(/\\/g, "/")}`;
+        const routePath = `/api-reference/${fileName}`;
+
+        let componentName = fileName
+          .replace(/[^a-zA-Z0-9_]/g, "_")
+          .split("_")
+          .filter(word => word.length > 0)
+          .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+          .join("");
+
+        if (/^[0-9]/.test(componentName)) {
+          componentName = `API${componentName}`;
+        }
+
+        routes.push({ importPath, routePath, componentName });
+      }
+    }
+  }
+
+  walkContentDir(contentDir);
+  walkAPIDir(apiPagesDir);
 
   const imports = routes
     .map((r) => `import ${r.componentName} from "${r.importPath}";`)
@@ -69,7 +104,7 @@ function generateRoutingPages(contentDir = "src/content") {
     .join("\n          ");
 
   const output = `
-// AUTO-GENERATED FILE — do not edit manually
+// AUTO-GENERATED FILE – do not edit manually
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { DocLayout } from "@/components/layout/DocLayout";
 import navigation from "@/content/meta.json";
@@ -90,7 +125,7 @@ export function SystemRoutes() {
 `;
 
   fs.writeFileSync("src/SystemRoutes.jsx", output);
-  console.log("SystemRoutes.jsx generated successfully!");
+  console.log(`✅ SystemRoutes.jsx generated with ${routes.length} routes!`);
 }
 
 generateRoutingPages();

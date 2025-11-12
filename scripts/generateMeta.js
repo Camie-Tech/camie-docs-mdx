@@ -3,15 +3,15 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-// ES modules compatibility
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const CONTENT_DIR = path.join(__dirname, "..", "src", "content");
+const API_PAGES_DIR = path.join(__dirname, "..", "src", "pages", "api-reference");
 const META_OUTPUT = path.join(CONTENT_DIR, "meta.json");
 
 /**
- * Generate meta.json from content directory structure
+ * Generate meta.json from content directory structure + API pages
  */
 function generateMeta() {
   console.log("🔄 Generating meta.json...");
@@ -28,14 +28,19 @@ function generateMeta() {
     }
   }
 
-  // If existing meta.json has navigation, use it as-is
+  // If existing meta.json has navigation, check if it's manually maintained
   if (existingMeta?.navigation && Array.isArray(existingMeta.navigation)) {
-    console.log("✅ Using navigation from cloned repository");
-    console.log(`📁 Found ${existingMeta.navigation.length} navigation sections`);
-    return;
+    // Check if it has API Reference already structured
+    const hasApiRef = existingMeta.navigation.some(
+      (item) => item.title === "API Reference" && item.children
+    );
+    
+    if (hasApiRef) {
+      console.log("✅ Using manually structured navigation from cloned repository");
+      return;
+    }
   }
 
-  // Otherwise, generate from directory structure
   console.log("📂 Scanning content directory for MDX files...");
 
   if (!fs.existsSync(CONTENT_DIR)) {
@@ -47,6 +52,31 @@ function generateMeta() {
   }
 
   const navigation = buildNavigationFromDirectory(CONTENT_DIR);
+
+  // Add API Reference section from generated API pages
+  const apiRefSection = buildAPIReferenceSection();
+  if (apiRefSection) {
+    // Find "Api" section and nest API Reference inside it
+    const apiSectionIndex = navigation.findIndex(
+      (item) => item.title.toLowerCase() === "api"
+    );
+
+    if (apiSectionIndex !== -1) {
+      // Add API Reference as a child of Api section
+      if (!navigation[apiSectionIndex].children) {
+        navigation[apiSectionIndex].children = [];
+      }
+      navigation[apiSectionIndex].children.push(apiRefSection);
+    } else {
+      // No Api section, add API Reference as top-level
+      navigation.push(apiRefSection);
+    }
+  }
+
+  // Remove any standalone "api-reference.mdx" from root level
+  const filteredNav = navigation.filter(
+    (item) => !item.href || !item.href.includes("api-reference")
+  );
 
   // Preserve theme and branding from existing meta.json or use defaults
   const meta = {
@@ -60,12 +90,52 @@ function generateMeta() {
       logo: "/logo.svg",
       favicon: "/favicon.ico",
     },
-    navigation,
+    navigation: filteredNav,
   };
 
   fs.writeFileSync(META_OUTPUT, JSON.stringify(meta, null, 2));
-  console.log(`✅ Generated meta.json with ${navigation.length} sections`);
+  console.log(`✅ Generated meta.json with ${filteredNav.length} sections`);
   console.log(`📝 Output: ${META_OUTPUT}`);
+}
+
+/**
+ * Build API Reference section from generated endpoint pages
+ */
+function buildAPIReferenceSection() {
+  const metadataPath = path.join(API_PAGES_DIR, "endpoints-metadata.json");
+
+  if (!fs.existsSync(metadataPath)) {
+    console.log("⚠️  No API endpoints metadata found");
+    return null;
+  }
+
+  try {
+    const metadata = JSON.parse(fs.readFileSync(metadataPath, "utf8"));
+    const { groupedEndpoints } = metadata;
+
+    if (!groupedEndpoints || Object.keys(groupedEndpoints).length === 0) {
+      return null;
+    }
+
+    // Build nested structure: API Reference > Tag (Assistants, Squads, etc.) > Endpoints
+    const children = Object.entries(groupedEndpoints).map(([tag, endpoints]) => {
+      return {
+        title: tag,
+        children: endpoints.map((ep) => ({
+          title: `${ep.method} ${ep.summary || ep.path}`,
+          href: ep.routePath,
+        })),
+      };
+    });
+
+    return {
+      title: "API Reference",
+      children,
+    };
+  } catch (e) {
+    console.error("❌ Error reading API metadata:", e.message);
+    return null;
+  }
 }
 
 /**
@@ -79,8 +149,12 @@ function buildNavigationFromDirectory(contentDir) {
     const fullPath = path.join(contentDir, item);
     const stat = fs.statSync(fullPath);
 
-    // Skip meta.json and hidden files
-    if (item === "meta.json" || item.startsWith(".")) {
+    // Skip meta.json, hidden files, and api-reference.mdx at root
+    if (
+      item === "meta.json" ||
+      item.startsWith(".") ||
+      item === "api-reference.mdx"
+    ) {
       continue;
     }
 
@@ -90,29 +164,14 @@ function buildNavigationFromDirectory(contentDir) {
       if (section) {
         navigation.push(section);
       }
-    } else if (item.endsWith(".mdx")) {
-      // Root-level MDX file = Single page
+    } else if (item.endsWith(".mdx") && item !== "index.mdx") {
+      // Root-level MDX file (except index) = Single page
       const fileName = path.basename(item, ".mdx");
       navigation.push({
         title: formatTitle(fileName),
         href: `/${fileName}`,
       });
     }
-  }
-
-  // Add API Reference section if APIReference component exists
-  const apiRefPath = path.join(
-    __dirname,
-    "..",
-    "src",
-    "components",
-    "APIReference"
-  );
-  if (fs.existsSync(apiRefPath)) {
-    navigation.push({
-      title: "API Reference",
-      href: "/api-reference",
-    });
   }
 
   return navigation;

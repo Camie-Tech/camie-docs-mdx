@@ -32,6 +32,10 @@ rm -rf "$TEMP_DIR"
 
 echo "✅ All repository contents moved into $CONTENT_DIR successfully."
 
+# 🔄 Generate API pages from OpenAPI spec
+echo "🔧 Generating individual API endpoint pages..."
+node scripts/generateAPIPages.js
+
 # 🔄 Generate meta.json from cloned content
 echo "🔧 Generating meta.json from content structure..."
 node scripts/generateMeta.js
