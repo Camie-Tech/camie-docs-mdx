@@ -10,7 +10,7 @@ REPO_URL=$1
 TEMP_DIR="temp_repo"
 CONTENT_DIR="src/content"
 
-echo "Cloning repository..."
+echo "🔄 Cloning repository..."
 
 # If GITHUB_TOKEN exists, inject it into the URL
 if [ -n "$GITHUB_TOKEN" ]; then
@@ -24,10 +24,16 @@ fi
 
 mkdir -p "$CONTENT_DIR"
 
-echo "Moving repository contents into $CONTENT_DIR..."
+echo "📁 Moving repository contents into $CONTENT_DIR..."
 shopt -s dotglob
 mv "$TEMP_DIR"/* "$CONTENT_DIR"/
 
 rm -rf "$TEMP_DIR"
 
-echo "All repository contents moved into $CONTENT_DIR successfully."
+echo "✅ All repository contents moved into $CONTENT_DIR successfully."
+
+# 🔄 Generate meta.json from cloned content
+echo "🔧 Generating meta.json from content structure..."
+node scripts/generateMeta.js
+
+echo "✅ Content setup complete!"
