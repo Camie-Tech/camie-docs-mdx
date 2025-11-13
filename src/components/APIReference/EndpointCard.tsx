@@ -78,9 +78,9 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
   }, [examples, selectedResponse]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 border border-border rounded-lg overflow-hidden bg-card">
-      {/* LEFT COLUMN: Documentation */}
-      <div className="p-6 space-y-6">
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-border rounded-lg overflow-hidden bg-card">
+      {/* LEFT COLUMN: Documentation - Scrollable */}
+      <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(100vh-200px)]">
         {/* Method & Path Header */}
         <div className="space-y-3">
           <div className="flex items-center gap-3 flex-wrap">
@@ -206,8 +206,8 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
         )}
       </div>
 
-      {/* RIGHT COLUMN: Code Examples */}
-      <div className="bg-muted/30 dark:bg-muted/10 p-6 space-y-4 border-l border-border">
+      {/* RIGHT COLUMN: Code Examples - STICKY */}
+      <div className="bg-muted/30 dark:bg-muted/10 p-6 space-y-4 border-l border-border lg:sticky lg:top-0 lg:self-start lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto">
         {/* Request Example */}
         {requestExample && (
           <div className="space-y-2">

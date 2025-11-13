@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-function generateRoutingPages(contentDir = "src/content", apiPagesDir = "src/pages/api-reference") {
+function generateRoutingPages(contentDir = "src/content", apiPagesDir = "pages/api-reference") {
   const routes = [];
 
   // Scan content directory for MDX files

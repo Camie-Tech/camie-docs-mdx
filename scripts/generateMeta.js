@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const CONTENT_DIR = path.join(__dirname, "..", "src", "content");
-const API_PAGES_DIR = path.join(__dirname, "..", "src", "pages", "api-reference");
+const API_PAGES_DIR = path.join(__dirname, "..", "pages", "api-reference");
 const META_OUTPUT = path.join(CONTENT_DIR, "meta.json");
 
 /**
