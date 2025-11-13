@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const OPENAPI_PATH = path.join(__dirname, "..", "src", "data", "openapi.json");
-const API_OUTPUT_DIR = path.join(__dirname, "..", "src", "pages", "api-reference");
+const API_OUTPUT_DIR = path.join(__dirname, "..", "pages", "api-reference");
 
 /**
  * Generate individual page files for each API endpoint
