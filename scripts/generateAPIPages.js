@@ -7,8 +7,10 @@ import crypto from "crypto";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const OPENAPI_PATH = path.join(__dirname, "..", "src", "data", "openapi.json");
-const API_OUTPUT_DIR = path.join(__dirname, "..", "pages", "api-reference");
+// FIX: Go up TWO levels from scripts/ to get to project root
+const PROJECT_ROOT = path.join(__dirname, "..", "..");
+const OPENAPI_PATH = path.join(PROJECT_ROOT, "src", "data", "openapi.json");
+const API_OUTPUT_DIR = path.join(PROJECT_ROOT, "pages", "api-reference");
 
 /**
  * Generate individual page files for each API endpoint

@@ -1,6 +1,7 @@
 ﻿components.json
 eslint.config.js
 index.html
+MDX.txt
 package.json
 package-lock.json
 public
@@ -9,6 +10,8 @@ README.md
 render.yaml
 scripts
 scripts\clone_and_move.sh
+scripts\generateAPIPages.js
+scripts\generateMeta.js
 scripts\generateRoutingPages.js
 src
 src\App.css
@@ -17,7 +20,6 @@ src\assets
 src\assets\react.svg
 src\components
 src\components\APIReference
-src\components\APIReference\APIReference.tsx
 src\components\APIReference\EndpointCard.tsx
 src\components\layout
 src\components\layout\DocLayout.tsx

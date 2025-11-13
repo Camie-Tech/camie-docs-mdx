@@ -68,9 +68,10 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": __dirname,  // Just use __dirname directly!
+      "@": path.resolve(__dirname, "./src"),
     },
   },
+
   // Allow all hosts in preview mode and development
   // preview: {
   //   host: true, // Listen on all addresses
