@@ -6,10 +6,11 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// FIX: Go up TWO levels from scripts/ to get to project root
-const PROJECT_ROOT = path.join(__dirname, "..", "..");
-const CONTENT_DIR = path.join(PROJECT_ROOT, "src", "content");
-const API_PAGES_DIR = path.join(PROJECT_ROOT, "pages", "api-reference");
+// __dirname = /opt/render/project/src/scripts/
+// Go up ONE level to get to /opt/render/project/src/
+const SRC_ROOT = path.join(__dirname, "..");
+const CONTENT_DIR = path.join(SRC_ROOT, "content");
+const API_PAGES_DIR = path.join(__dirname, "..", "..", "pages", "api-reference");
 const META_OUTPUT = path.join(CONTENT_DIR, "meta.json");
 
 /**
