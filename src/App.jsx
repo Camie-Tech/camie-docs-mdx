@@ -4,7 +4,7 @@ import {
   ThemeCustomizer,
 } from "@/components/providers/ThemeProvider";
 import { CustomMDXProvider } from "@/components/providers/MDXProvider";
-import { SystemRoutes } from "@/SystemRoutes"; // ✅ Use @ alias instead of relative path
+import { SystemRoutes } from "./SystemRoutes"; // ✅ RELATIVE PATH - SystemRoutes.jsx is in same directory as App.jsx
 
 function App() {
   return (
