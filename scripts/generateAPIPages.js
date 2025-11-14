@@ -7,11 +7,16 @@ import crypto from "crypto";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Use process.cwd() to get the actual project root
-const PROJECT_ROOT = process.cwd();
+// Detect if we're running from /opt/render/project/src/ or /opt/render/project/
+const cwd = process.cwd();
+const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
+
+const PROJECT_ROOT = isInSrcDir ? path.join(cwd, '..') : cwd;
 const OPENAPI_PATH = path.join(PROJECT_ROOT, "src", "data", "openapi.json");
 const API_OUTPUT_DIR = path.join(PROJECT_ROOT, "pages", "api-reference");
 
+console.log(`🔍 Debug: cwd = ${cwd}`);
+console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
 console.log(`🔍 Debug: PROJECT_ROOT = ${PROJECT_ROOT}`);
 console.log(`🔍 Debug: OPENAPI_PATH = ${OPENAPI_PATH}`);
 console.log(`🔍 Debug: openapi.json exists? ${fs.existsSync(OPENAPI_PATH)}`);

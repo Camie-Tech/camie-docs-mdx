@@ -103,12 +103,12 @@ function generateRoutingPages(contentDir = "src/content", apiPagesDir = "pages/a
     )
     .join("\n          ");
 
-  // 🔥 THE FIX: Use relative path instead of @ alias
+  // 🔥 FIX: Use @/content/meta.json instead of relative path
   const output = `
 // AUTO-GENERATED FILE – do not edit manually
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { DocLayout } from "@/components/layout/DocLayout";
-import navigation from "../content/meta.json";
+import navigation from "@/content/meta.json";
 
 ${imports}
 
@@ -125,8 +125,14 @@ export function SystemRoutes() {
 }
 `;
 
-  fs.writeFileSync("src/SystemRoutes.jsx", output);
+  // Detect output path based on where we're running from
+  const cwd = process.cwd();
+  const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
+  const outputPath = isInSrcDir ? "SystemRoutes.jsx" : "src/SystemRoutes.jsx";
+
+  fs.writeFileSync(outputPath, output);
   console.log(`✅ SystemRoutes.jsx generated with ${routes.length} routes!`);
+  console.log(`📝 Output: ${path.resolve(outputPath)}`);
 }
 
 generateRoutingPages();
