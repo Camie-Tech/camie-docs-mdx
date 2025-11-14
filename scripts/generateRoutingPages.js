@@ -116,7 +116,6 @@ function generateRoutingPages() {
     )
     .join("\n          ");
 
-  // 🔥 FIX: Use @/content/meta.json instead of relative path
   const output = `
 // AUTO-GENERATED FILE – do not edit manually
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
@@ -139,8 +138,6 @@ export function SystemRoutes() {
 `;
 
   // Detect output path based on where we're running from
-  const cwd = process.cwd();
-  const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
   const outputPath = isInSrcDir ? "SystemRoutes.jsx" : "src/SystemRoutes.jsx";
 
   fs.writeFileSync(outputPath, output);
