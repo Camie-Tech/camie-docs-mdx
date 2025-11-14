@@ -1,7 +1,20 @@
 import fs from "fs";
 import path from "path";
 
-function generateRoutingPages(contentDir = "src/content", apiPagesDir = "pages/api-reference") {
+function generateRoutingPages() {
+  // Detect if we're running from /opt/render/project/src/ or /opt/render/project/
+  const cwd = process.cwd();
+  const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
+
+  // Adjust paths based on where we're running from
+  const contentDir = isInSrcDir ? "content" : "src/content";
+  const apiPagesDir = isInSrcDir ? path.join("..", "pages", "api-reference") : "pages/api-reference";
+
+  console.log(`🔍 Debug: cwd = ${cwd}`);
+  console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
+  console.log(`🔍 Debug: contentDir = ${contentDir}`);
+  console.log(`🔍 Debug: apiPagesDir = ${apiPagesDir}`);
+
   const routes = [];
 
   // Scan content directory for MDX files
