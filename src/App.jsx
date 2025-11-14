@@ -4,7 +4,7 @@ import {
   ThemeCustomizer,
 } from "@/components/providers/ThemeProvider";
 import { CustomMDXProvider } from "@/components/providers/MDXProvider";
-import { SystemRoutes } from "./SystemRoutes";
+import { SystemRoutes } from "@/SystemRoutes"; // ✅ Use @ alias instead of relative path
 
 function App() {
   return (

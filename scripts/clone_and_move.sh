@@ -8,8 +8,22 @@ fi
 
 REPO_URL=$1
 TEMP_DIR="temp_repo"
-CONTENT_DIR="src/content"
-DATA_DIR="src/data"
+
+# Detect if we're running from /opt/render/project/src or /opt/render/project
+CURRENT_DIR=$(pwd)
+echo "🔍 Debug: Current directory = $CURRENT_DIR"
+
+if [[ "$CURRENT_DIR" == */src ]]; then
+  # Running from /opt/render/project/src, so paths are relative to here
+  CONTENT_DIR="content"
+  DATA_DIR="data"
+  echo "✅ Detected running from src/ directory"
+else
+  # Running from /opt/render/project, so paths include src/
+  CONTENT_DIR="src/content"
+  DATA_DIR="src/data"
+  echo "✅ Detected running from project root"
+fi
 
 echo "🔄 Cloning repository..."
 
