@@ -103,11 +103,12 @@ function generateRoutingPages(contentDir = "src/content", apiPagesDir = "pages/a
     )
     .join("\n          ");
 
+  // 🔥 THE FIX: Use relative path instead of @ alias
   const output = `
 // AUTO-GENERATED FILE – do not edit manually
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { DocLayout } from "@/components/layout/DocLayout";
-import navigation from "@/content/meta.json";
+import navigation from "../content/meta.json";
 
 ${imports}
 
