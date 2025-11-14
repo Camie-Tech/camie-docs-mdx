@@ -1,5 +1,7 @@
 services:
   - type: static
+    # ✅ FIX: Tell Render to build from project root, not src/
+    rootDir: .
     buildCommand: npm install && chmod +x scripts/clone_and_move.sh && ./scripts/clone_and_move.sh "$GITHUB_REPO_URL" && npm run build
     publishPath: dist
     envVars:
