@@ -11,13 +11,17 @@ const __dirname = path.dirname(__filename);
 const cwd = process.cwd();
 const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
 
-const PROJECT_ROOT = isInSrcDir ? path.join(cwd, '..') : cwd;
-const OPENAPI_PATH = path.join(PROJECT_ROOT, "src", "data", "openapi.json");
-const API_OUTPUT_DIR = path.join(PROJECT_ROOT, "pages", "api-reference");
+// ✅ FIX: When running from src/, the paths are relative to src/
+const OPENAPI_PATH = isInSrcDir 
+  ? path.join(cwd, "data", "openapi.json")  // /opt/render/project/src/data/openapi.json
+  : path.join(cwd, "src", "data", "openapi.json");  // /opt/render/project/src/data/openapi.json
+
+const API_OUTPUT_DIR = isInSrcDir
+  ? path.join(cwd, "..", "pages", "api-reference")  // /opt/render/project/pages/api-reference
+  : path.join(cwd, "pages", "api-reference");
 
 console.log(`🔍 Debug: cwd = ${cwd}`);
 console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
-console.log(`🔍 Debug: PROJECT_ROOT = ${PROJECT_ROOT}`);
 console.log(`🔍 Debug: OPENAPI_PATH = ${OPENAPI_PATH}`);
 console.log(`🔍 Debug: openapi.json exists? ${fs.existsSync(OPENAPI_PATH)}`);
 
@@ -216,44 +220,29 @@ function extractExamples(responses) {
       for (const [contentType, mediaType] of Object.entries(content)) {
         // Prefer application/json but accept others
         if (mediaType.example) {
-          examples[code] = { 
-            data: mediaType.example,
-            contentType 
-          };
+          examples[code] = mediaType.example;
           break;
         } else if (mediaType.examples) {
           // Handle multiple examples
           for (const [exampleKey, exampleObj] of Object.entries(mediaType.examples)) {
             const exampleData = exampleObj.value || exampleObj;
-            examples[`${code}:${exampleKey}`] = { 
-              data: exampleData,
-              contentType 
-            };
+            examples[`${code}:${exampleKey}`] = exampleData;
           }
           break;
         } else if (mediaType.schema) {
           // Fallback: generate from schema
-          examples[code] = { 
-            data: generateExampleFromSchema(mediaType.schema),
-            contentType 
-          };
+          examples[code] = generateExampleFromSchema(mediaType.schema);
           break;
         }
       }
 
       // If no content, just add the response
       if (!examples[code] && !Object.keys(examples).some(k => k.startsWith(`${code}:`))) {
-        examples[code] = { 
-          data: resp,
-          contentType: "application/json" 
-        };
+        examples[code] = resp;
       }
     } catch (e) {
       // Graceful fallback
-      examples[code] = { 
-        data: { message: "Example not available" },
-        contentType: "application/json"
-      };
+      examples[code] = { message: "Example not available" };
     }
   }
 
