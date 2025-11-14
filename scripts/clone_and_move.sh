@@ -9,6 +9,7 @@ fi
 REPO_URL=$1
 TEMP_DIR="temp_repo"
 CONTENT_DIR="src/content"
+DATA_DIR="src/data"
 
 echo "🔄 Cloning repository..."
 
@@ -23,14 +24,58 @@ else
 fi
 
 mkdir -p "$CONTENT_DIR"
+mkdir -p "$DATA_DIR"
 
-echo "📁 Moving repository contents into $CONTENT_DIR..."
-shopt -s dotglob
-mv "$TEMP_DIR"/* "$CONTENT_DIR"/
+echo "📁 Moving repository contents..."
+
+# Check if repo has src/content structure or flat structure
+if [ -d "$TEMP_DIR/src/content" ]; then
+  echo "✅ Found src/content structure in repo"
+  
+  # Move openapi.json if it exists
+  if [ -f "$TEMP_DIR/src/data/openapi.json" ]; then
+    echo "✅ Moving openapi.json to $DATA_DIR/"
+    mv "$TEMP_DIR/src/data/openapi.json" "$DATA_DIR/"
+  fi
+  
+  # Move content
+  shopt -s dotglob
+  mv "$TEMP_DIR/src/content"/* "$CONTENT_DIR"/ 2>/dev/null || true
+  
+elif [ -d "$TEMP_DIR/content" ]; then
+  echo "✅ Found content/ directory in repo"
+  
+  # Move openapi.json if it exists
+  if [ -f "$TEMP_DIR/data/openapi.json" ]; then
+    echo "✅ Moving openapi.json to $DATA_DIR/"
+    mv "$TEMP_DIR/data/openapi.json" "$DATA_DIR/"
+  fi
+  
+  # Move content
+  shopt -s dotglob
+  mv "$TEMP_DIR/content"/* "$CONTENT_DIR"/ 2>/dev/null || true
+  
+else
+  echo "✅ Found flat structure, moving all files"
+  
+  # Move openapi.json to src/data/ if it exists
+  if [ -f "$TEMP_DIR/openapi.json" ]; then
+    echo "✅ Found openapi.json, moving to $DATA_DIR/"
+    mv "$TEMP_DIR/openapi.json" "$DATA_DIR/"
+  fi
+  
+  # Move everything else to src/content/
+  shopt -s dotglob
+  mv "$TEMP_DIR"/* "$CONTENT_DIR"/ 2>/dev/null || true
+fi
+
+# Debug: List what was moved
+echo "📋 Content directory now contains:"
+ls -la "$CONTENT_DIR" || echo "Content directory is empty!"
 
 rm -rf "$TEMP_DIR"
 
-echo "✅ All repository contents moved into $CONTENT_DIR successfully."
+echo "✅ All repository contents moved successfully."
 
 # 🔄 Generate API pages from OpenAPI spec
 echo "🔧 Generating individual API endpoint pages..."
