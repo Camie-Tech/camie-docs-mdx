@@ -6,7 +6,7 @@ function generateRoutingPages() {
 
   // Render runs from /opt/render/project/src/, paths are relative to cwd
   const contentDir = "src/content";
-  const apiPagesDir = "pages/api-reference";
+  const apiPagesDir = "src/pages/api-reference";
 
   console.log(`🔍 Debug: cwd = ${cwd}`);
   console.log(`🔍 Debug: contentDir = ${contentDir}`);
