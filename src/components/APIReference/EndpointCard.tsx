@@ -38,26 +38,23 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
   const [copiedResponse, setCopiedResponse] = useState<string | null>(null);
   const [selectedResponse, setSelectedResponse] = useState<string | null>(null);
 
-  // Determine if we're in dark mode by checking the html class
   const isDarkMode =
     typeof window !== "undefined" &&
     document.documentElement.classList.contains("dark");
 
   const methodUpper = method.toUpperCase();
 
-  // Method badge colors
+  // Method badge colors - VAPI style
   const methodColors: Record<string, string> = {
-    GET: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
-    POST: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
-    PUT: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-    PATCH:
-      "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
-    DELETE: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+    GET: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20",
+    POST: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+    PUT: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+    PATCH: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
+    DELETE: "bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20",
   };
 
   const methodColor = methodColors[methodUpper] || "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300";
 
-  // Copy to clipboard handler
   const copyToClipboard = (text: string, type: "request" | "response") => {
     navigator.clipboard.writeText(text).then(() => {
       if (type === "request") {
@@ -70,7 +67,6 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
     });
   };
 
-  // Initialize selected response
   React.useEffect(() => {
     if (examples && Object.keys(examples).length > 0 && !selectedResponse) {
       setSelectedResponse(Object.keys(examples)[0]);
@@ -78,76 +74,108 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
   }, [examples, selectedResponse]);
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 border border-border rounded-lg overflow-hidden bg-card">
-      {/* LEFT COLUMN: Documentation - Scrollable */}
-      <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(100vh-200px)]">
+    // 🎯 VAPI STYLE: No outer border, minimal rounded corners, better spacing
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0 bg-background">
+      {/* LEFT COLUMN: Documentation */}
+      <div className="p-8 space-y-8 border-r border-border/50">
         {/* Method & Path Header */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center gap-3 flex-wrap">
             <span
-              className={`inline-flex items-center px-2.5 py-1 text-xs font-bold uppercase rounded ${methodColor}`}
+              className={`inline-flex items-center px-3 py-1.5 text-xs font-semibold uppercase rounded-md ${methodColor}`}
             >
               {methodUpper}
             </span>
-            <code className="text-sm font-mono text-foreground break-all">
+            <code className="text-sm font-mono text-foreground/80 break-all">
               {path}
             </code>
           </div>
 
           {summary && (
-            <h3 className="text-lg font-semibold text-foreground">{summary}</h3>
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">
+              {summary}
+            </h1>
           )}
 
           {description && (
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-base text-muted-foreground leading-relaxed">
               {description}
             </p>
           )}
         </div>
 
-        {/* Path/Query Parameters */}
+        {/* Authentication Section */}
+        <div className="space-y-3">
+          <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+            Authentication
+          </h3>
+          <div className="bg-muted/30 border border-border/50 rounded-lg p-4">
+            <p className="text-sm text-muted-foreground">
+              <span className="font-mono text-xs bg-background px-2 py-1 rounded border border-border/50">
+                Authorization
+              </span>
+              {" "}Bearer
+            </p>
+            <p className="text-xs text-muted-foreground mt-2">
+              Retrieve your API Key from Dashboard.
+            </p>
+          </div>
+        </div>
+
+        {/* Query Parameters */}
         {parameters && parameters.length > 0 && (
-          <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
-              Parameters
-            </h4>
-            <div className="space-y-3">
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
+              Query Parameters
+            </h3>
+            <div className="space-y-4">
               {parameters.map((p: Param, i: number) => (
                 <div
                   key={i}
-                  className="border-l-2 border-border pl-4 py-2 space-y-1"
+                  className="border-l-2 border-primary/30 pl-4 space-y-2"
                 >
                   <div className="flex items-center gap-2 flex-wrap">
-                    <code className="text-sm font-mono text-foreground font-medium">
+                    <code className="text-sm font-mono text-foreground font-semibold">
                       {p.name}
                     </code>
                     <span className="text-xs text-muted-foreground">
                       {p.schema?.type || "string"}
                     </span>
                     {p.required && (
-                      <span className="text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded">
+                      <span className="text-xs bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-md border border-red-500/20">
                         required
                       </span>
                     )}
-                    {p.in && (
-                      <span className="text-xs bg-muted text-muted-foreground px-1.5 py-0.5 rounded">
-                        {p.in}
+                    {!p.required && (
+                      <span className="text-xs text-muted-foreground">
+                        Optional
                       </span>
                     )}
                   </div>
                   {p.description && (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                       {p.description}
                     </p>
                   )}
                   {p.schema?.enum && (
                     <div className="text-xs text-muted-foreground">
-                      Allowed: {p.schema.enum.join(", ")}
+                      <span className="font-semibold">Allowed values:</span>{" "}
+                      {p.schema.enum.map((val, idx) => (
+                        <code
+                          key={idx}
+                          className="bg-muted px-1.5 py-0.5 rounded mx-1"
+                        >
+                          {val}
+                        </code>
+                      ))}
                     </div>
                   )}
                   {p.schema?.default !== undefined && (
                     <div className="text-xs text-muted-foreground">
-                      Default: {String(p.schema.default)}
+                      <span className="font-semibold">Default:</span>{" "}
+                      <code className="bg-muted px-1.5 py-0.5 rounded">
+                        {String(p.schema.default)}
+                      </code>
                     </div>
                   )}
                 </div>
@@ -156,16 +184,20 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
           </div>
         )}
 
-        {/* Request Body Schema */}
+        {/* Request Body */}
         {requestBody && (
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
               Request Body
-            </h4>
-            <div className="text-sm text-muted-foreground">
-              {requestBody.description && <p>{requestBody.description}</p>}
+            </h3>
+            <div className="bg-muted/30 border border-border/50 rounded-lg p-4">
+              {requestBody.description && (
+                <p className="text-sm text-muted-foreground">
+                  {requestBody.description}
+                </p>
+              )}
               {requestBody.required && (
-                <span className="inline-block mt-1 text-xs bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-1.5 py-0.5 rounded">
+                <span className="inline-block mt-2 text-xs bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-1 rounded-md border border-red-500/20">
                   required
                 </span>
               )}
@@ -173,12 +205,12 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
           </div>
         )}
 
-        {/* Response Status Codes */}
+        {/* Response Codes */}
         {examples && Object.keys(examples).length > 0 && (
           <div className="space-y-3">
-            <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">
+            <h3 className="text-sm font-semibold text-foreground uppercase tracking-wider">
               Responses
-            </h4>
+            </h3>
             <div className="space-y-2">
               {Object.keys(examples).map((code) => {
                 const statusCode = code.split(":")[0];
@@ -186,11 +218,13 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
                 return (
                   <div
                     key={code}
-                    className="flex items-center gap-2 text-sm"
+                    className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/30"
                   >
                     <span
-                      className={`font-mono font-semibold ${
-                        isSuccess ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"
+                      className={`font-mono font-bold text-base ${
+                        isSuccess
+                          ? "text-emerald-600 dark:text-emerald-400"
+                          : "text-red-600 dark:text-red-400"
                       }`}
                     >
                       {statusCode}
@@ -207,42 +241,43 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
       </div>
 
       {/* RIGHT COLUMN: Code Examples - STICKY */}
-      <div className="bg-muted/30 dark:bg-muted/10 p-6 space-y-4 border-l border-border lg:sticky lg:top-0 lg:self-start lg:max-h-[calc(100vh-200px)] lg:overflow-y-auto">
+      <div className="bg-muted/5 p-8 space-y-6 lg:sticky lg:top-0 lg:self-start lg:max-h-screen lg:overflow-y-auto">
         {/* Request Example */}
         {requestExample && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Example Request
               </h4>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => copyToClipboard(requestExample, "request")}
-                className="h-7 text-xs"
+                className="h-8 text-xs hover:bg-background"
               >
                 {copiedRequest ? (
                   <>
-                    <Check className="w-3 h-3 mr-1" />
+                    <Check className="w-3 h-3 mr-1.5" />
                     Copied
                   </>
                 ) : (
                   <>
-                    <Copy className="w-3 h-3 mr-1" />
+                    <Copy className="w-3 h-3 mr-1.5" />
                     Copy
                   </>
                 )}
               </Button>
             </div>
-            <div className="rounded-md overflow-hidden border border-border">
+            <div className="rounded-lg overflow-hidden border border-border/50 shadow-sm">
               <SyntaxHighlighter
                 language="bash"
                 style={isDarkMode ? vscDarkPlus : vs}
                 customStyle={{
                   margin: 0,
-                  padding: "1rem",
-                  fontSize: "0.75rem",
-                  background: isDarkMode ? "#1e1e1e" : "#f6f8fa",
+                  padding: "1.25rem",
+                  fontSize: "0.8rem",
+                  background: isDarkMode ? "#0d0d0d" : "#fafafa",
+                  lineHeight: "1.6",
                 }}
               >
                 {requestExample}
@@ -253,9 +288,9 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
 
         {/* Response Examples */}
         {examples && Object.keys(examples).length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
                 Example Response
               </h4>
               {selectedResponse && (
@@ -268,16 +303,17 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
                       "response"
                     )
                   }
-                  className="h-7 text-xs"
+                  className="h-8 text-xs hover:bg-background"
                 >
-                  {copiedResponse === JSON.stringify(examples[selectedResponse], null, 2) ? (
+                  {copiedResponse ===
+                  JSON.stringify(examples[selectedResponse], null, 2) ? (
                     <>
-                      <Check className="w-3 h-3 mr-1" />
+                      <Check className="w-3 h-3 mr-1.5" />
                       Copied
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3 h-3 mr-1" />
+                      <Copy className="w-3 h-3 mr-1.5" />
                       Copy
                     </>
                   )}
@@ -285,19 +321,22 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
               )}
             </div>
 
-            {/* Response Tabs */}
+            {/* Response Status Tabs */}
             {Object.keys(examples).length > 1 && (
-              <div className="flex gap-1 flex-wrap mb-2">
+              <div className="flex gap-2 flex-wrap">
                 {Object.keys(examples).map((code) => {
                   const statusCode = code.split(":")[0];
+                  const isSuccess = statusCode.startsWith("2");
                   return (
                     <button
                       key={code}
                       onClick={() => setSelectedResponse(code)}
-                      className={`px-2.5 py-1 text-xs font-mono rounded transition-colors ${
+                      className={`px-3 py-1.5 text-xs font-mono font-semibold rounded-md border transition-all ${
                         selectedResponse === code
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                          ? isSuccess
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                            : "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/30"
+                          : "bg-background text-muted-foreground border-border/50 hover:border-border"
                       }`}
                     >
                       {statusCode}
@@ -309,15 +348,16 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
 
             {/* Response Body */}
             {selectedResponse && (
-              <div className="rounded-md overflow-hidden border border-border">
+              <div className="rounded-lg overflow-hidden border border-border/50 shadow-sm">
                 <SyntaxHighlighter
                   language="json"
                   style={isDarkMode ? vscDarkPlus : vs}
                   customStyle={{
                     margin: 0,
-                    padding: "1rem",
-                    fontSize: "0.75rem",
-                    background: isDarkMode ? "#1e1e1e" : "#f6f8fa",
+                    padding: "1.25rem",
+                    fontSize: "0.8rem",
+                    background: isDarkMode ? "#0d0d0d" : "#fafafa",
+                    lineHeight: "1.6",
                   }}
                 >
                   {JSON.stringify(examples[selectedResponse], null, 2)}
@@ -331,9 +371,6 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
   );
 };
 
-/**
- * Get human-readable status message
- */
 function getStatusMessage(code: string): string {
   const messages: Record<string, string> = {
     "200": "OK",
