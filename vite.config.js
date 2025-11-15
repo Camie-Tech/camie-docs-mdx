@@ -71,7 +71,6 @@ export default defineConfig({
       "@": path.resolve(process.cwd(), "src"),
     },
   },
-});
 
   // Allow all hosts in preview mode and development
   // preview: {
