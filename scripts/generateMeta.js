@@ -35,19 +35,6 @@ function generateMeta() {
     }
   }
 
-  // If existing meta.json has navigation, check if it's manually maintained
-  if (existingMeta?.navigation && Array.isArray(existingMeta.navigation)) {
-    // Check if it has API Reference already structured
-    const hasApiRef = existingMeta.navigation.some(
-      (item) => item.title === "API Reference" && item.children
-    );
-    
-    if (hasApiRef) {
-      console.log("✅ Using manually structured navigation from cloned repository");
-      return;
-    }
-  }
-
   console.log("📂 Scanning content directory for MDX files...");
 
   if (!fs.existsSync(CONTENT_DIR)) {
@@ -60,23 +47,22 @@ function generateMeta() {
 
   const navigation = buildNavigationFromDirectory(CONTENT_DIR);
 
-  // Add API Reference section from generated API pages
+  // Build API Reference section from generated API pages
   const apiRefSection = buildAPIReferenceSection();
   if (apiRefSection) {
-    // Find "Api" section and nest API Reference inside it
+    // Find "Api" section and REPLACE it with generated API Reference
     const apiSectionIndex = navigation.findIndex(
       (item) => item.title.toLowerCase() === "api"
     );
 
     if (apiSectionIndex !== -1) {
-      // Add API Reference as a child of Api section
-      if (!navigation[apiSectionIndex].children) {
-        navigation[apiSectionIndex].children = [];
-      }
-      navigation[apiSectionIndex].children.push(apiRefSection);
+      // REPLACE the Api section entirely
+      navigation[apiSectionIndex] = apiRefSection;
+      console.log("✅ Replaced 'Api' section with generated API Reference");
     } else {
       // No Api section, add API Reference as top-level
       navigation.push(apiRefSection);
+      console.log("✅ Added API Reference as top-level section");
     }
   }
 
@@ -134,6 +120,8 @@ function buildAPIReferenceSection() {
         })),
       };
     });
+
+    console.log(`✅ Built API Reference with ${Object.keys(groupedEndpoints).length} categories and ${Object.values(groupedEndpoints).flat().length} endpoints`);
 
     return {
       title: "API Reference",
