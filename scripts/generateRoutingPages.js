@@ -2,16 +2,13 @@ import fs from "fs";
 import path from "path";
 
 function generateRoutingPages() {
-  // Detect if we're running from /opt/render/project/src/ or /opt/render/project/
   const cwd = process.cwd();
-  const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
 
-  // Adjust paths based on where we're running from
-  const contentDir = isInSrcDir ? "content" : "src/content";
-  const apiPagesDir = isInSrcDir ? path.join("..", "pages", "api-reference") : "pages/api-reference";
+  // Render runs from /opt/render/project/src/, paths are relative to cwd
+  const contentDir = "src/content";
+  const apiPagesDir = "pages/api-reference";
 
   console.log(`🔍 Debug: cwd = ${cwd}`);
-  console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
   console.log(`🔍 Debug: contentDir = ${contentDir}`);
   console.log(`🔍 Debug: apiPagesDir = ${apiPagesDir}`);
 
@@ -137,8 +134,8 @@ export function SystemRoutes() {
 }
 `;
 
-  // Detect output path based on where we're running from
-  const outputPath = isInSrcDir ? "SystemRoutes.jsx" : "src/SystemRoutes.jsx";
+  // Output to src/SystemRoutes.jsx so App.jsx can import it
+  const outputPath = "src/SystemRoutes.jsx";
 
   fs.writeFileSync(outputPath, output);
   console.log(`✅ SystemRoutes.jsx generated with ${routes.length} routes!`);
