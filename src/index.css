@@ -177,16 +177,16 @@
 
 /* Base font and layout */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Default radius */
-  --radius: 0.625rem;
+  /* Default radius - slightly larger for VAPI style */
+  --radius: 0.5rem;
 
   /* Colors will be injected by ThemeProvider */
 }
@@ -199,42 +199,137 @@
 
   body {
     @apply bg-background text-foreground;
-    /* Remove transition from here to avoid conflicts */
   }
 
-  /* Code block styling */
+  /* 🎯 VAPI-STYLE: Better typography */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-3xl md:text-4xl;
+  }
+
+  h2 {
+    @apply text-2xl md:text-3xl;
+  }
+
+  h3 {
+    @apply text-xl md:text-2xl;
+  }
+
+  /* Code block styling - VAPI dark theme */
   pre {
-    @apply rounded-lg overflow-x-auto;
+    @apply rounded-lg overflow-x-auto border border-border/50 shadow-sm;
   }
 
   code {
-    @apply bg-muted px-1.5 py-0.5 rounded text-sm font-mono;
+    @apply bg-muted/50 px-1.5 py-0.5 rounded text-sm font-mono;
   }
 
   pre code {
     @apply bg-transparent p-0;
   }
+
+  /* Links */
+  a {
+    @apply text-primary hover:text-primary/80 transition-colors;
+  }
+
+  /* Better focus states */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary/50 rounded;
+  }
 }
 
-/* Custom scrollbar for better UX */
+/* 🎯 VAPI-STYLE: Improved scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-background;
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-border rounded-full;
+  @apply bg-border/50 hover:bg-border rounded-full;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  @apply bg-muted-foreground;
+/* 🎯 VAPI-STYLE: Card improvements */
+.prose {
+  @apply max-w-none;
 }
 
-/* Focus styles */
-:focus-visible {
-  @apply outline-2 outline-offset-2 outline-ring;
+.prose pre {
+  @apply my-4 bg-muted/5;
+}
+
+.prose code {
+  @apply text-primary;
+}
+
+/* 🎯 VAPI-STYLE: Better table styling */
+table {
+  @apply w-full border-collapse;
+}
+
+th {
+  @apply bg-muted/30 text-left px-4 py-2 font-semibold text-sm border-b border-border/50;
+}
+
+td {
+  @apply px-4 py-3 border-b border-border/30;
+}
+
+/* 🎯 VAPI-STYLE: Status badges */
+.status-badge {
+  @apply inline-flex items-center px-2 py-1 rounded-md text-xs font-semibold;
+}
+
+.status-success {
+  @apply bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20;
+}
+
+.status-error {
+  @apply bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20;
+}
+
+.status-warning {
+  @apply bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20;
+}
+
+/* 🎯 VAPI-STYLE: Better sidebar */
+aside {
+  @apply border-r border-border/50;
+}
+
+/* 🎯 VAPI-STYLE: Reduce excessive spacing */
+main article > * + * {
+  margin-top: 1rem;
+}
+
+main article > h1 + *,
+main article > h2 + *,
+main article > h3 + * {
+  margin-top: 1.5rem;
+}
+
+/* 🎯 VAPI-STYLE: Better button hover states */
+button:hover {
+  @apply transition-all duration-150;
+}
+
+/* 🎯 VAPI-STYLE: Loading states */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton {
+  @apply animate-pulse bg-muted/30 rounded;
 }
