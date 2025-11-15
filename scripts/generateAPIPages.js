@@ -14,7 +14,7 @@ const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
 // Render clones to /opt/render/project/src/, so openapi.json is at cwd/src/data/
 const OPENAPI_PATH = path.join(cwd, "src", "data", "openapi.json");
 
-const API_OUTPUT_DIR = path.join(cwd, "pages", "api-reference");
+const API_OUTPUT_DIR = path.join(cwd, "src", "pages", "api-reference");
 
 console.log(`🔍 Debug: cwd = ${cwd}`);
 console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
