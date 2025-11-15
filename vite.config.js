@@ -68,9 +68,6 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      // When build runs from /opt/render/project/src/, the repo structure is:
-      // /opt/render/project/src/src/... (double src)
-      // So @ should resolve to /opt/render/project/src/src/
       "@": path.resolve(process.cwd(), "src"),
     },
   },
