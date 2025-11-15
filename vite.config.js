@@ -56,7 +56,6 @@ import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
-  root: process.cwd(),  // 👈 ADD THIS LINE
   plugins: [
     mdx({
       remarkPlugins: [remarkGfm, remarkFrontmatter, remarkMdxFrontmatter],
@@ -69,10 +68,13 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      "@": path.resolve(process.cwd()),  
-      // Use process.cwd() instead of __dirname
+      // When build runs from /opt/render/project/src/, the repo structure is:
+      // /opt/render/project/src/src/... (double src)
+      // So @ should resolve to /opt/render/project/src/src/
+      "@": path.resolve(process.cwd(), "src"),
     },
   },
+});
 
   // Allow all hosts in preview mode and development
   // preview: {
