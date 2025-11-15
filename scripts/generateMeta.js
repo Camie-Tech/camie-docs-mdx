@@ -10,7 +10,7 @@ const cwd = process.cwd();
 
 // Render runs from /opt/render/project/src/, content is at cwd/src/content/
 const CONTENT_DIR = path.join(cwd, "src", "content");
-const API_PAGES_DIR = path.join(cwd, "pages", "api-reference");
+const API_PAGES_DIR = path.join(cwd, "src", "pages", "api-reference");
 const META_OUTPUT = path.join(CONTENT_DIR, "meta.json");
 
 console.log(`🔍 Debug: cwd = ${cwd}`);
