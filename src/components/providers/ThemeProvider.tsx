@@ -22,6 +22,19 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
+// 🎯 FIX: Load dark mode preference BEFORE rendering
+function getInitialDarkMode(): boolean {
+  if (typeof window === "undefined") return false;
+  
+  const saved = localStorage.getItem("theme-mode");
+  if (saved) {
+    return saved === "dark";
+  }
+  
+  // Check system preference
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+}
+
 interface ThemeProviderProps {
   children: React.ReactNode;
   initialTheme?: ThemeConfig;
@@ -37,13 +50,13 @@ export function ThemeProvider({
     initialTheme || null
   );
   const [theme, setTheme] = useState<GeneratedTheme | null>(null);
-  const [isDark, setIsDark] = useState(defaultMode === "dark");
+  // 🎯 FIX: Initialize with saved preference immediately
+  const [isDark, setIsDark] = useState(() => getInitialDarkMode());
 
   // Load theme from meta.json or localStorage
   useEffect(() => {
     const loadThemeConfig = async () => {
       try {
-        // Try to load from meta.json first
         if (!initialTheme) {
           const response = await fetch("/src/content/meta.json");
           const meta = await response.json();
@@ -54,7 +67,6 @@ export function ThemeProvider({
           }
         }
 
-        // Fallback to default theme
         const defaultTheme: ThemeConfig = {
           primary: "#2563eb",
           secondary: "#64748b",
@@ -63,7 +75,6 @@ export function ThemeProvider({
         setThemeConfig(defaultTheme);
       } catch (error) {
         console.warn("Failed to load theme config:", error);
-        // Use default theme
         const defaultTheme: ThemeConfig = {
           primary: "#2563eb",
           secondary: "#64748b",
@@ -85,7 +96,7 @@ export function ThemeProvider({
       setTheme(generatedTheme);
       applyThemeToDocument(generatedTheme, isDark);
     }
-  }, [themeConfig, isDark]); // Add isDark as dependency
+  }, [themeConfig, isDark]);
 
   // Handle dark mode class toggle
   useEffect(() => {
@@ -96,23 +107,8 @@ export function ThemeProvider({
       root.classList.remove("dark");
     }
 
-    // Persist theme preference
     localStorage.setItem("theme-mode", isDark ? "dark" : "light");
   }, [isDark]);
-
-  // Load saved theme preference on mount
-  useEffect(() => {
-    const savedMode = localStorage.getItem("theme-mode");
-    if (savedMode) {
-      setIsDark(savedMode === "dark");
-    } else {
-      // Check system preference
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      setIsDark(prefersDark);
-    }
-  }, []);
 
   const toggleTheme = () => {
     setIsDark(!isDark);
@@ -120,7 +116,6 @@ export function ThemeProvider({
 
   const updateThemeConfig = (config: ThemeConfig) => {
     setThemeConfig(config);
-    // Optionally save to localStorage for persistence
     localStorage.setItem("theme-config", JSON.stringify(config));
   };
 
