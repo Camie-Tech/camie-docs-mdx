@@ -71,6 +71,9 @@ function generateMeta() {
     (item) => !item.href || !item.href.includes("api-reference")
   );
 
+  // 🎯 FIX: Sort sections to ensure "Getting Started" comes first
+  const sortedNav = sortNavigationSections(filteredNav);
+
   // Preserve theme and branding from existing meta.json or use defaults
   const meta = {
     theme: existingMeta?.theme || {
@@ -83,12 +86,34 @@ function generateMeta() {
       logo: "/logo.svg",
       favicon: "/favicon.ico",
     },
-    navigation: filteredNav,
+    navigation: sortedNav,
   };
 
   fs.writeFileSync(META_OUTPUT, JSON.stringify(meta, null, 2));
-  console.log(`✅ Generated meta.json with ${filteredNav.length} sections`);
+  console.log(`✅ Generated meta.json with ${sortedNav.length} sections`);
   console.log(`📝 Output: ${META_OUTPUT}`);
+}
+
+/**
+ * Sort navigation sections with Getting Started first
+ */
+function sortNavigationSections(navigation) {
+  const priorityOrder = {
+    "getting started": 1,
+    "api reference": 2,
+  };
+
+  return navigation.sort((a, b) => {
+    const aPriority = priorityOrder[a.title.toLowerCase()] || 999;
+    const bPriority = priorityOrder[b.title.toLowerCase()] || 999;
+    
+    if (aPriority !== bPriority) {
+      return aPriority - bPriority;
+    }
+    
+    // If both have same priority (or no priority), sort alphabetically
+    return a.title.localeCompare(b.title);
+  });
 }
 
 /**
