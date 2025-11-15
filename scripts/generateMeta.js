@@ -6,18 +6,14 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Detect if we're running from /opt/render/project/src/ or /opt/render/project/
 const cwd = process.cwd();
-const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
 
-const PROJECT_ROOT = isInSrcDir ? path.join(cwd, '..') : cwd;
-const CONTENT_DIR = path.join(PROJECT_ROOT, "src", "content");
-const API_PAGES_DIR = path.join(PROJECT_ROOT, "pages", "api-reference");
+// Render runs from /opt/render/project/src/, content is at cwd/src/content/
+const CONTENT_DIR = path.join(cwd, "src", "content");
+const API_PAGES_DIR = path.join(cwd, "pages", "api-reference");
 const META_OUTPUT = path.join(CONTENT_DIR, "meta.json");
 
 console.log(`🔍 Debug: cwd = ${cwd}`);
-console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
-console.log(`🔍 Debug: PROJECT_ROOT = ${PROJECT_ROOT}`);
 console.log(`🔍 Debug: CONTENT_DIR = ${CONTENT_DIR}`);
 console.log(`🔍 Debug: Content exists? ${fs.existsSync(CONTENT_DIR)}`);
 
