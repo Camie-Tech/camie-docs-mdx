@@ -11,14 +11,10 @@ const __dirname = path.dirname(__filename);
 const cwd = process.cwd();
 const isInSrcDir = cwd.endsWith('/src') || cwd.endsWith('\\src');
 
-// ✅ FIX: When running from src/, the paths are relative to src/
-const OPENAPI_PATH = isInSrcDir 
-  ? path.join(cwd, "data", "openapi.json")  // /opt/render/project/src/data/openapi.json
-  : path.join(cwd, "src", "data", "openapi.json");  // /opt/render/project/src/data/openapi.json
+// Render clones to /opt/render/project/src/, so openapi.json is at cwd/src/data/
+const OPENAPI_PATH = path.join(cwd, "src", "data", "openapi.json");
 
-const API_OUTPUT_DIR = isInSrcDir
-  ? path.join(cwd, "..", "pages", "api-reference")  // /opt/render/project/pages/api-reference
-  : path.join(cwd, "pages", "api-reference");
+const API_OUTPUT_DIR = path.join(cwd, "pages", "api-reference");
 
 console.log(`🔍 Debug: cwd = ${cwd}`);
 console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
