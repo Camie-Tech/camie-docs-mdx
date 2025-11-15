@@ -132,7 +132,7 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
               {parameters.map((p: Param, i: number) => (
                 <div
                   key={i}
-                  className="border-l-2 border-primary/30 pl-4 space-y-2"
+                  className="border-l-2 border-primary/20 pl-4 space-y-2"
                 >
                   <div className="flex items-center gap-2 flex-wrap">
                     <code className="text-sm font-mono text-foreground font-semibold">
@@ -221,7 +221,7 @@ const EndpointCard: React.FC<EndpointCardProps> = ({
                     className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/30"
                   >
                     <span
-                      className={`font-mono font-bold text-base ${
+                      className={`font-mono font-bold text-lg ${
                         isSuccess
                           ? "text-emerald-600 dark:text-emerald-400"
                           : "text-red-600 dark:text-red-400"
