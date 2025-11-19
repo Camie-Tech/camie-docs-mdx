@@ -1,4 +1,4 @@
-// scripts/generateMeta.js - CORRECTED VERSION
+// scripts/generateMeta.js
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -7,140 +7,85 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const cwd = process.cwd();
+
+// Render runs from /opt/render/project/src/, content is at cwd/src/content/
 const CONTENT_DIR = path.join(cwd, "src", "content");
 const API_PAGES_DIR = path.join(cwd, "src", "pages", "api-reference");
 const META_OUTPUT = path.join(CONTENT_DIR, "meta.json");
 
-console.log(`📂 Debug: cwd = ${cwd}`);
-console.log(`📂 Debug: CONTENT_DIR = ${CONTENT_DIR}`);
-console.log(`📂 Debug: Content exists? ${fs.existsSync(CONTENT_DIR)}`);
+console.log(`🔍 Debug: cwd = ${cwd}`);
+console.log(`🔍 Debug: CONTENT_DIR = ${CONTENT_DIR}`);
+console.log(`🔍 Debug: Content exists? ${fs.existsSync(CONTENT_DIR)}`);
 
 /**
- * 🔥 MERGE STRATEGY: Fork meta.json takes priority
- */
-function mergeNavigationSections(forkNav, generatedNav) {
-  if (!forkNav || forkNav.length === 0) {
-    // No fork navigation, use generated
-    return generatedNav;
-  }
-
-  // Create a map of fork sections by title (case-insensitive)
-  const forkSectionsMap = new Map();
-  forkNav.forEach(section => {
-    forkSectionsMap.set(section.title.toLowerCase(), section);
-  });
-
-  // Start with fork navigation as the base
-  const mergedNav = [...forkNav];
-
-  // Add generated sections that don't exist in fork
-  generatedNav.forEach(genSection => {
-    const genTitleLower = genSection.title.toLowerCase();
-    
-    if (!forkSectionsMap.has(genTitleLower)) {
-      // Section doesn't exist in fork, add it
-      console.log(`✅ Adding generated section: ${genSection.title}`);
-      mergedNav.push(genSection);
-    } else {
-      // Section exists in fork - FORK WINS, but log it
-      console.log(`⚠️ Section "${genSection.title}" exists in fork meta.json - keeping fork version`);
-    }
-  });
-
-  return mergedNav;
-}
-
-/**
- * Generate meta.json from content directory structure + API pages
+ * Generate meta.json - ONLY handles API Reference injection
  */
 function generateMeta() {
-  console.log("📄 Generating meta.json...");
+  console.log("🔄 Processing meta.json...");
 
-  // 🔥 STEP 1: Load existing meta.json from forked repo
+  // 🔥 STEP 1: Load fork's existing meta.json (this is the MASTER)
   let forkMeta = null;
   if (fs.existsSync(META_OUTPUT)) {
     try {
       const content = fs.readFileSync(META_OUTPUT, "utf8");
       forkMeta = JSON.parse(content);
-      console.log("✅ Found existing meta.json from forked repo");
+      console.log("✅ Found fork's meta.json");
       console.log(`   - Theme: ${JSON.stringify(forkMeta.theme)}`);
       console.log(`   - Sections: ${forkMeta.navigation?.length || 0}`);
     } catch (e) {
-      console.warn("⚠️ Could not parse existing meta.json");
+      console.error("❌ Could not parse fork's meta.json:", e.message);
+      process.exit(1);
     }
+  } else {
+    console.error("❌ Fork's meta.json not found at:", META_OUTPUT);
+    console.log("⚠️  Cannot proceed without fork's meta.json");
+    process.exit(1);
   }
 
-  console.log("📂 Scanning content directory for MDX files...");
+  // 🔥 STEP 2: Build API Reference section from generated API pages
+  const apiRefSection = buildAPIReferenceSection();
 
-  if (!fs.existsSync(CONTENT_DIR)) {
-    console.log("⚠️ Content directory not found, using fork meta.json or defaults");
-    const defaultMeta = forkMeta || createDefaultMeta();
-    fs.mkdirSync(CONTENT_DIR, { recursive: true });
-    fs.writeFileSync(META_OUTPUT, JSON.stringify(defaultMeta, null, 2));
+  if (!apiRefSection) {
+    console.log("⚠️  No API Reference generated - keeping fork meta as-is");
+    // Still write back to ensure file exists
+    fs.writeFileSync(META_OUTPUT, JSON.stringify(forkMeta, null, 2));
     return;
   }
 
-  // 🔥 STEP 2: Generate navigation from cloned content
-  const generatedNavigation = buildNavigationFromDirectory(CONTENT_DIR);
+  // 🔥 STEP 3: Replace or add API Reference in fork's navigation
+  let finalNavigation = [...(forkMeta.navigation || [])];
+  
+  // Find existing "API Reference" section (case-insensitive)
+  const apiSectionIndex = finalNavigation.findIndex(
+    (section) => section.title.toLowerCase() === "api reference"
+  );
 
-  // 🔥 STEP 3: Build API Reference section from generated pages
-  const apiRefSection = buildAPIReferenceSection();
-  if (apiRefSection) {
-    generatedNavigation.push(apiRefSection);
-    console.log("✅ Added API Reference to generated navigation");
+  if (apiSectionIndex !== -1) {
+    // REPLACE the existing API Reference section with generated one
+    finalNavigation[apiSectionIndex] = apiRefSection;
+    console.log("✅ REPLACED 'API Reference' section with generated endpoints");
+  } else {
+    // Add API Reference as new section
+    finalNavigation.push(apiRefSection);
+    console.log("✅ ADDED 'API Reference' section to navigation");
   }
 
-  // 🔥 STEP 4: MERGE fork navigation with generated navigation
-  const forkNavigation = forkMeta?.navigation || [];
-  const finalNavigation = mergeNavigationSections(forkNavigation, generatedNavigation);
-
-  // Sort with priority order (Getting Started first, API Reference second)
-  const sortedNav = sortNavigationSections(finalNavigation);
-
-  // 🔥 STEP 5: Final meta.json - FORK TAKES PRIORITY
+  // 🔥 STEP 4: Write final meta.json (fork's theme + updated navigation)
   const finalMeta = {
-    theme: forkMeta?.theme || {
-      primary: "#2563eb",
-      secondary: "#64748b",
-      accent: "#7c3aed",
-    },
-    branding: forkMeta?.branding || {
-      title: "Documentation",
-      logo: "/logo.svg",
-      favicon: "/favicon.ico",
-    },
-    navigation: sortedNav,
+    theme: forkMeta.theme,
+    branding: forkMeta.branding,
+    navigation: finalNavigation,
   };
 
   fs.writeFileSync(META_OUTPUT, JSON.stringify(finalMeta, null, 2));
-  console.log(`✅ Generated meta.json with ${sortedNav.length} sections`);
-  console.log(`📍 Output: ${META_OUTPUT}`);
+  console.log(`✅ Updated meta.json with ${finalNavigation.length} sections`);
+  console.log(`📝 Output: ${META_OUTPUT}`);
   
-  // Log final navigation structure for verification
+  // Log final structure
   console.log("\n📋 Final Navigation Structure:");
-  sortedNav.forEach(section => {
-    console.log(`   - ${section.title} (${section.children?.length || 0} items)`);
-  });
-}
-
-/**
- * Sort navigation sections with Getting Started first, API Reference second
- */
-function sortNavigationSections(navigation) {
-  const priorityOrder = {
-    "getting started": 1,
-    "api reference": 2,
-  };
-
-  return navigation.sort((a, b) => {
-    const aPriority = priorityOrder[a.title.toLowerCase()] || 999;
-    const bPriority = priorityOrder[b.title.toLowerCase()] || 999;
-    
-    if (aPriority !== bPriority) {
-      return aPriority - bPriority;
-    }
-    
-    return a.title.localeCompare(b.title);
+  finalNavigation.forEach((section, index) => {
+    const childCount = section.children?.length || 0;
+    console.log(`   ${index + 1}. ${section.title} (${childCount} children)`);
   });
 }
 
@@ -151,7 +96,7 @@ function buildAPIReferenceSection() {
   const metadataPath = path.join(API_PAGES_DIR, "endpoints-metadata.json");
 
   if (!fs.existsSync(metadataPath)) {
-    console.log("⚠️ No API endpoints metadata found");
+    console.log("⚠️  No API endpoints metadata found");
     return null;
   }
 
@@ -163,6 +108,7 @@ function buildAPIReferenceSection() {
       return null;
     }
 
+    // Build nested structure: API Reference > Tag (Assistants, Squads, etc.) > Endpoints
     const children = Object.entries(groupedEndpoints).map(([tag, endpoints]) => {
       return {
         title: tag,
@@ -173,7 +119,7 @@ function buildAPIReferenceSection() {
       };
     });
 
-    console.log(`✅ Built API Reference with ${Object.keys(groupedEndpoints).length} categories`);
+    console.log(`✅ Built API Reference with ${Object.keys(groupedEndpoints).length} categories and ${Object.values(groupedEndpoints).flat().length} endpoints`);
 
     return {
       title: "API Reference",
@@ -183,125 +129,6 @@ function buildAPIReferenceSection() {
     console.error("❌ Error reading API metadata:", e.message);
     return null;
   }
-}
-
-/**
- * Build navigation structure from directory tree
- */
-function buildNavigationFromDirectory(contentDir) {
-  const navigation = [];
-  const items = fs.readdirSync(contentDir);
-
-  for (const item of items) {
-    const fullPath = path.join(contentDir, item);
-    const stat = fs.statSync(fullPath);
-
-    if (
-      item === "meta.json" ||
-      item.startsWith(".") ||
-      item === "api-reference.mdx"
-    ) {
-      continue;
-    }
-
-    if (stat.isDirectory()) {
-      const section = buildSection(item, fullPath);
-      if (section) {
-        navigation.push(section);
-      }
-    } else if (item.endsWith(".mdx") && item !== "index.mdx") {
-      const fileName = path.basename(item, ".mdx");
-      navigation.push({
-        title: formatTitle(fileName),
-        href: `/${fileName}`,
-      });
-    }
-  }
-
-  return navigation;
-}
-
-/**
- * Build a navigation section from a directory
- */
-function buildSection(dirName, dirPath) {
-  const children = [];
-  const items = fs.readdirSync(dirPath);
-
-  for (const item of items) {
-    const fullPath = path.join(dirPath, item);
-    const stat = fs.statSync(fullPath);
-
-    if (stat.isDirectory()) {
-      const subsection = buildSection(item, fullPath);
-      if (subsection) {
-        children.push(subsection);
-      }
-    } else if (item.endsWith(".mdx")) {
-      const fileName = path.basename(item, ".mdx");
-      const routePath = buildRoutePath(dirPath, fileName);
-      children.push({
-        title: formatTitle(fileName),
-        href: routePath,
-      });
-    }
-  }
-
-  if (children.length === 0) {
-    return null;
-  }
-
-  return {
-    title: formatTitle(dirName),
-    children,
-  };
-}
-
-/**
- * Build route path from directory structure
- */
-function buildRoutePath(dirPath, fileName) {
-  const relativePath = path.relative(CONTENT_DIR, dirPath);
-  if (!relativePath || relativePath === ".") {
-    return `/${fileName}`;
-  }
-  return `/${relativePath.replace(/\\/g, "/")}/${fileName}`;
-}
-
-/**
- * Format directory/file name to human-readable title
- */
-function formatTitle(name) {
-  return name
-    .split(/[-_]/)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-}
-
-/**
- * Create default meta.json when no content exists
- */
-function createDefaultMeta() {
-  return {
-    theme: {
-      primary: "#2563eb",
-      secondary: "#64748b",
-      accent: "#7c3aed",
-    },
-    branding: {
-      title: "Documentation",
-      logo: "/logo.svg",
-      favicon: "/favicon.ico",
-    },
-    navigation: [
-      {
-        title: "Getting Started",
-        children: [
-          { title: "Introduction", href: "/getting-started/introduction" },
-        ],
-      },
-    ],
-  };
 }
 
 // Run the generator
