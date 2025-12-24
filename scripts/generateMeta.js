@@ -46,28 +46,31 @@ function generateMeta() {
   const apiRefSection = buildAPIReferenceSection();
 
   if (!apiRefSection) {
-    console.log("⚠️  No API Reference generated - keeping fork meta as-is");
-    // Still write back to ensure file exists
-    fs.writeFileSync(META_OUTPUT, JSON.stringify(forkMeta, null, 2));
-    return;
+    console.log("ℹ️  No API Reference endpoints to inject.");
   }
 
   // 🔥 STEP 3: Replace or add API Reference in fork's navigation
   let finalNavigation = [...(forkMeta.navigation || [])];
-  
+
   // Find existing "API Reference" section (case-insensitive)
   const apiSectionIndex = finalNavigation.findIndex(
     (section) => section.title.toLowerCase() === "api reference"
   );
 
-  if (apiSectionIndex !== -1) {
-    // REPLACE the existing API Reference section with generated one
-    finalNavigation[apiSectionIndex] = apiRefSection;
-    console.log("✅ REPLACED 'API Reference' section with generated endpoints");
-  } else {
-    // Add API Reference as new section
-    finalNavigation.push(apiRefSection);
-    console.log("✅ ADDED 'API Reference' section to navigation");
+  if (apiRefSection) {
+    if (apiSectionIndex !== -1) {
+      // REPLACE the existing API Reference section with generated one
+      finalNavigation[apiSectionIndex] = apiRefSection;
+      console.log("✅ REPLACED 'API Reference' section with generated endpoints");
+    } else {
+      // Add API Reference as new section
+      finalNavigation.push(apiRefSection);
+      console.log("✅ ADDED 'API Reference' section to navigation");
+    }
+  } else if (apiSectionIndex !== -1) {
+    // REMOVE the section if it exists but we have no endpoints
+    finalNavigation.splice(apiSectionIndex, 1);
+    console.log("🗑️ REMOVED 'API Reference' section because no endpoints were found");
   }
 
   // 🔥 STEP 4: Write final meta.json (fork's theme + updated navigation)
@@ -80,7 +83,7 @@ function generateMeta() {
   fs.writeFileSync(META_OUTPUT, JSON.stringify(finalMeta, null, 2));
   console.log(`✅ Updated meta.json with ${finalNavigation.length} sections`);
   console.log(`📝 Output: ${META_OUTPUT}`);
-  
+
   // Log final structure
   console.log("\n📋 Final Navigation Structure:");
   finalNavigation.forEach((section, index) => {

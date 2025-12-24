@@ -19,7 +19,23 @@ const API_OUTPUT_DIR = path.join(cwd, "src", "pages", "api-reference");
 console.log(`🔍 Debug: cwd = ${cwd}`);
 console.log(`🔍 Debug: isInSrcDir = ${isInSrcDir}`);
 console.log(`🔍 Debug: OPENAPI_PATH = ${OPENAPI_PATH}`);
-console.log(`🔍 Debug: openapi.json exists? ${fs.existsSync(OPENAPI_PATH)}`);
+
+// 🧹 Purge old pages and check for spec
+if (!fs.existsSync(OPENAPI_PATH)) {
+  console.log('⚠️ No openapi.json found. Clearing existing API pages...');
+  if (fs.existsSync(API_OUTPUT_DIR)) {
+    fs.rmSync(API_OUTPUT_DIR, { recursive: true, force: true });
+  }
+  fs.mkdirSync(API_OUTPUT_DIR, { recursive: true });
+
+  // Write an empty metadata file so generateMeta knows there are no endpoints
+  const metadataPath = path.join(API_OUTPUT_DIR, "endpoints-metadata.json");
+  fs.writeFileSync(metadataPath, JSON.stringify({ groupedEndpoints: {} }, null, 2));
+
+  process.exit(0);
+}
+
+console.log(`🔍 Debug: openapi.json exists? true`);
 
 /**
  * Generate individual page files for each API endpoint
@@ -64,7 +80,7 @@ function generateAPIPages() {
       }
 
       const methodUpper = method.toUpperCase();
-      
+
       // Get tags (dynamic - uses whatever exists in spec)
       const tags = def.tags && def.tags.length > 0 ? def.tags : ["General"];
       const primaryTag = tags[0]; // Use first tag for primary grouping
@@ -211,7 +227,7 @@ function extractExamples(responses) {
   for (const [code, resp] of Object.entries(responses)) {
     try {
       const content = resp.content || {};
-      
+
       // Try to find any content type with examples
       for (const [contentType, mediaType] of Object.entries(content)) {
         // Prefer application/json but accept others
@@ -271,7 +287,7 @@ function buildRequestExample(method, baseUrl, pathStr, requestBody, securitySche
   if (requestBody) {
     const content = requestBody.content || {};
     const jsonContent = content["application/json"] || Object.values(content)[0];
-    
+
     if (jsonContent) {
       let bodyData;
       if (jsonContent.example) {
@@ -306,7 +322,7 @@ function generateEndpointComponent({
 }) {
   // Serialize examples properly
   const examplesStr = JSON.stringify(examples, null, 2);
-  
+
   return `// Auto-generated API endpoint page
 import React from "react";
 import EndpointCard from "@/components/APIReference/EndpointCard";

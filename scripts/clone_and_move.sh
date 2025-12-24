@@ -17,7 +17,12 @@ echo "🔍 Debug: Current directory = $CURRENT_DIR"
 # Repo structure after clone has src/content/, so paths are:
 CONTENT_DIR="src/content"
 DATA_DIR="src/data"
+API_REFERENCE_DIR="src/pages/api-reference"
 echo "✅ Paths set for Render environment"
+
+echo "🧹 Cleaning up old data..."
+rm -rf "$API_REFERENCE_DIR"/*
+rm -f "$DATA_DIR/openapi.json"
 
 echo "🔄 Cloning repository..."
 
