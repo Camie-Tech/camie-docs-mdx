@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import { X, Send, Sparkles, Bot, User, Maximize2, Minimize2, ExternalLink, Hash } from "lucide-react";
+import { X, Send, Sparkles, Bot, User, Maximize2, Minimize2, ExternalLink, Hash, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { searchVectors } from "@/lib/vector-store";
 
@@ -9,6 +9,7 @@ interface Message {
     role: "user" | "assistant";
     content: string;
     timestamp: Date;
+    pairId?: string; // Links user message with AI response
 }
 
 export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
@@ -32,11 +33,54 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         }
     }, [messages, isLoading]);
 
+    // Simple markdown to HTML converter for clean formatting
+    const formatMarkdown = (text: string) => {
+        return text
+            // Bold
+            .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+            // Italic
+            .replace(/\*(.+?)\*/g, '<em>$1</em>')
+            // Headings
+            .replace(/^### (.+)$/gm, '<h3 class="font-semibold text-base mt-3 mb-1">$1</h3>')
+            .replace(/^## (.+)$/gm, '<h2 class="font-semibold text-lg mt-4 mb-2">$1</h2>')
+            .replace(/^# (.+)$/gm, '<h1 class="font-bold text-xl mt-4 mb-2">$1</h1>')
+            // Bullet lists
+            .replace(/^\* (.+)$/gm, '<li class="ml-4 mb-1">$1</li>')
+            .replace(/(<li.*<\/li>)/s, '<ul class="list-disc list-inside space-y-1 my-2">$1</ul>')
+            // Numbered lists  
+            .replace(/^\d+\. (.+)$/gm, '<li class="ml-4 mb-1">$1</li>')
+            // Line breaks
+            .replace(/\n\n/g, '<br/><br/>')
+            .replace(/\n/g, '<br/>');
+    };
+
+    const deleteMessage = (messageId: string) => {
+        setMessages((prev) => {
+            const messageToDelete = prev.find((m) => m.id === messageId);
+            if (!messageToDelete) return prev;
+
+            // If deleting a user message, also delete the paired AI response
+            if (messageToDelete.role === "user" && messageToDelete.pairId) {
+                return prev.filter((m) => m.id !== messageId && m.id !== messageToDelete.pairId);
+            }
+            // If deleting an AI message, also delete the paired user message
+            if (messageToDelete.role === "assistant") {
+                const pairedUserMessage = prev.find((m) => m.pairId === messageId);
+                if (pairedUserMessage) {
+                    return prev.filter((m) => m.id !== messageId && m.id !== pairedUserMessage.id);
+                }
+            }
+            // Fallback: just delete the single message
+            return prev.filter((m) => m.id !== messageId);
+        });
+    };
+
     const handleSend = async () => {
         if (!input.trim() || isLoading) return;
 
+        const userMessageId = Date.now().toString();
         const userMessage: Message = {
-            id: Date.now().toString(),
+            id: userMessageId,
             role: "user",
             content: input,
             timestamp: new Date(),
@@ -105,14 +149,21 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 throw new Error(errorMsg);
             }
 
-            const answer = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that request.";
+            const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that request.";
 
-            setMessages((prev) => [...prev, {
+            const aiMessage: Message = {
                 id: Date.now().toString(),
                 role: "assistant",
-                content: answer,
+                content: aiResponse,
                 timestamp: new Date(),
-            }]);
+            };
+
+            // Link the user message to this AI response
+            setMessages((prev) =>
+                prev.map((m) =>
+                    m.id === userMessageId ? { ...m, pairId: aiMessage.id } : m
+                ).concat(aiMessage)
+            );
         } catch (error: any) {
             console.error("AI Error:", error);
 
@@ -175,19 +226,35 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                 {/* Messages */}
                 <div ref={scrollRef} className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth">
                     {messages.map((m) => (
-                        <div key={m.id} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                            <div className={`flex max-w-[85%] ${m.role === "user" ? "flex-row-reverse" : "flex-row"} items-start gap-3`}>
+                        <div key={m.id} className={`group flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
+                            <div className={`flex max-w-[85%] ${m.role === "user" ? "flex-row-reverse" : "flex-row"} items-start gap-2`}>
                                 <div className={`p-2 rounded-full ${m.role === "user" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
                                     {m.role === "user" ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                                 </div>
-                                <div className={`p-3 rounded-2xl text-sm leading-relaxed ${m.role === "user"
-                                    ? "bg-primary/10 text-foreground rounded-tr-none"
-                                    : "bg-muted/50 text-foreground rounded-tl-none border border-border"
-                                    }`}>
-                                    {m.content}
-                                    <div className={`text-[9px] mt-1.5 opacity-50 ${m.role === "user" ? "text-right" : "text-left"}`}>
-                                        {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                <div className="flex flex-col gap-1">
+                                    <div className={`p-3 rounded-2xl text-sm leading-relaxed ${m.role === "user"
+                                        ? "bg-primary/10 text-foreground rounded-tr-none"
+                                        : "bg-muted/50 text-foreground rounded-tl-none border border-border"
+                                        }`}>
+                                        {m.role === "assistant" ? (
+                                            <div
+                                                className="prose prose-sm max-w-none dark:prose-invert"
+                                                dangerouslySetInnerHTML={{ __html: formatMarkdown(m.content) }}
+                                            />
+                                        ) : (
+                                            m.content
+                                        )}
+                                        <div className={`text-[9px] mt-1.5 opacity-50 ${m.role === "user" ? "text-right" : "text-left"}`}>
+                                            {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        </div>
                                     </div>
+                                    <button
+                                        onClick={() => deleteMessage(m.id)}
+                                        className="opacity-0 group-hover:opacity-100 transition-opacity self-end text-xs text-muted-foreground hover:text-destructive flex items-center gap-1 px-2 py-1 rounded hover:bg-destructive/10"
+                                    >
+                                        <Trash2 className="h-3 w-3" />
+                                        Delete
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -227,7 +294,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
                         <button
                             onClick={handleSend}
                             disabled={!input.trim() || isLoading}
-                            className="absolute right-2 bottom-2 p-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-lg bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-50 transition-all"
                         >
                             <Send className="h-4 w-4" />
                         </button>
