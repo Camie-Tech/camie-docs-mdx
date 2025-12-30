@@ -1,9 +1,25 @@
 import { Button } from "@/components/ui/button";
 import { Search, Menu, Github, Sun, Moon } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import { SearchPalette } from "@/components/ui/SearchPalette";
+import { AIAssistant } from "@/components/ui/AIAssistant";
+import { useState, useEffect } from "react";
 
 export function Header() {
   const { isDark, toggleTheme } = useTheme();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAIOpen, setIsAIOpen] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
@@ -19,12 +35,30 @@ export function Header() {
           <div className="w-full flex-1 md:w-auto md:flex-none">
             <Button
               variant="outline"
-              className="h-9 w-full justify-start text-muted-foreground md:w-40 lg:w-64"
+              className="h-9 w-full justify-start text-muted-foreground md:w-40 lg:w-64 relative group border-border hover:border-primary/50 transition-all duration-200"
+              onClick={() => setIsSearchOpen(true)}
             >
-              <Search className="mr-2 h-4 w-4" />
-              Search docs...
+              <Search className="mr-2 h-4 w-4 transition-colors group-hover:text-primary" />
+              <span className="inline-flex">Search docs...</span>
+              <kbd className="pointer-events-none absolute right-2 top-1.5 hidden h-6 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+                <span className="text-xs">⌘</span>K
+              </kbd>
             </Button>
           </div>
+
+          <SearchPalette
+            isOpen={isSearchOpen}
+            onClose={() => setIsSearchOpen(false)}
+            onAskAI={() => {
+              setIsSearchOpen(false);
+              setIsAIOpen(true);
+            }}
+          />
+
+          <AIAssistant
+            isOpen={isAIOpen}
+            onClose={() => setIsAIOpen(false)}
+          />
 
           <Button variant="ghost" size="sm" onClick={toggleTheme}>
             {isDark ? (

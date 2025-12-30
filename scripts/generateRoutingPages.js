@@ -34,9 +34,12 @@ function generateRoutingPages() {
           .join("content", relativePath)
           .replace(/\\/g, "/")}`;
 
-        const routePath = folderPath
-          ? `/${folderPath}/${fileName}`
-          : `/${fileName}`;
+        let routePath = folderPath
+          ? `/${folderPath}/${fileName === "index" ? "" : fileName}`
+          : `/${fileName === "index" ? "" : fileName}`;
+
+        // Clean up trailing slash
+        routePath = routePath.replace(/\/$/, "") || "/";
 
         let componentName = (folderPath ? `${folderPath}/${fileName}` : fileName)
           .replace(/[\/\\]/g, "_")
@@ -116,7 +119,7 @@ function generateRoutingPages() {
   const output = `
 // AUTO-GENERATED FILE – do not edit manually
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { DocLayout } from "@/components/layout/DocLayout";
+import { DocLayout, NotFound } from "@/components/layout/DocLayout";
 import navigation from "@/content/meta.json";
 
 ${imports}
@@ -127,6 +130,7 @@ export function SystemRoutes() {
       <DocLayout navigation={navigation.navigation}>
         <Routes>
           ${routeElements}
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </DocLayout>
     </Router>
