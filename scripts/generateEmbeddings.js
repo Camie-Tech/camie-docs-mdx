@@ -2,9 +2,6 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
-import dotenv from 'dotenv';
-dotenv.config();
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -20,15 +17,31 @@ const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API
 const EMBEDDING_URL = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`;
 
 async function generateEmbedding(text) {
-    const response = await fetch(EMBEDDING_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            content: { parts: [{ text }] }
-        })
-    });
-    const data = await response.json();
-    return data.embedding.values;
+    try {
+        const response = await fetch(EMBEDDING_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                content: { parts: [{ text }] }
+            })
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error(`❌ API Error (${response.status}):`, JSON.stringify(data, null, 2));
+            return null;
+        }
+
+        if (!data.embedding || !data.embedding.values) {
+            console.error("❌ Unexpected API Response Format:", JSON.stringify(data, null, 2));
+            return null;
+        }
+
+        return data.embedding.values;
+    } catch (error) {
+        console.error("❌ Network or Parsing Error:", error.message);
+        return null;
+    }
 }
 
 async function main() {
