@@ -3,77 +3,77 @@
     "title": "API Endpoints",
     "excerpt": "API Endpoints\r\n\r\n User Management\r\n\r\n<ApiReference\r\n  method=\"GET\"\r\n  endpoint=\"/api/users\"\r\n  description=\"Retrieve a list of all users\"\r\n  par...",
     "path": "/api\\endpoints",
-    "category": "Documentation",
+    "category": "Api",
     "content": "\r\n# API Endpoints\r\n\r\n## User Management\r\n\r\n<ApiReference\r\n  method=\"GET\"\r\n  endpoint=\"/api/users\"\r\n  description=\"Retrieve a list of all users\"\r\n  parameters={[\r\n    { name: \"page\", type: \"number\", description: \"Page number for pagination\" },\r\n    {\r\n      name: \"limit\",\r\n      type: \"number\",\r\n      description: \"Number of users per page\",\r\n      required: true,\r\n    },\r\n  ]}\r\n  example={`{\r\n  \"users\": [\r\n    {\r\n      \"id\": 1,\r\n      \"name\": \"John Doe\",\r\n      \"email\": \"john@example.com\"\r\n    }\r\n  ],\r\n  \"pagination\": {\r\n    \"page\": 1,\r\n    \"total\": 100\r\n  }\r\n}`}\r\n/>\r\n\r\n<ApiReference\r\n  method=\"POST\"\r\n  endpoint=\"/api/users\"\r\n  description=\"Create a new user\"\r\n  parameters={[\r\n    {\r\n      name: \"name\",\r\n      type: \"string\",\r\n      description: \"User's full name\",\r\n      required: true,\r\n    },\r\n    {\r\n      name: \"email\",\r\n      type: \"string\",\r\n      description: \"User's email address\",\r\n      required: true,\r\n    },\r\n  ]}\r\n  example={`{\r\n  \"name\": \"Jane Smith\",\r\n  \"email\": \"jane@ex"
   },
   {
     "title": "API Endpoints",
     "excerpt": "...",
     "path": "/api\\endpoints#api-endpoints",
-    "category": "Documentation",
+    "category": "Api",
     "parentTitle": "API Endpoints"
   },
   {
     "title": "User Management",
     "excerpt": "<ApiReference\r\n  method=\"GET\"\r\n  endpoint=\"/api/users\"\r\n  description=\"Retrieve a list of all user...",
     "path": "/api\\endpoints#user-management",
-    "category": "Documentation",
+    "category": "Api",
     "parentTitle": "API Endpoints"
   },
   {
     "title": "Authentication",
     "excerpt": "<Alert type=\"warning\" title=\"Authentication Required\">\r\n  All API endpoints require a valid JWT to...",
     "path": "/api\\endpoints#authentication",
-    "category": "Documentation",
+    "category": "Api",
     "parentTitle": "API Endpoints"
   },
   {
     "title": "Installation",
     "excerpt": "<Accordion type=\"single\" collapsible className=\"w-full\" defaultValue=\"item-1\">\r\n  <AccordionItem value=\"item-1\">\r\n    <AccordionTrigger>Product Info...",
     "path": "/getting-started\\installation",
-    "category": "Guide",
+    "category": "Getting Started",
     "content": "\r\n<Accordion type=\"single\" collapsible className=\"w-full\" defaultValue=\"item-1\">\r\n  <AccordionItem value=\"item-1\">\r\n    <AccordionTrigger>Product Information Types 2</AccordionTrigger>\r\n    <AccordionContent className=\"flex flex-col gap-4 text-balance\">\r\n      <p>\r\n        Our flagship product combines cutting-edge technology with sleek design.\r\n        Built with premium materials, it offers unparalleled performance and\r\n        reliability.\r\n      </p>\r\n      <p>\r\n        Key features include advanced processing capabilities, and an intuitive\r\n        user interface designed for both beginners and experts.\r\n      </p>\r\n    </AccordionContent>\r\n  </AccordionItem>\r\n  <AccordionItem value=\"item-2\">\r\n    <AccordionTrigger>Shipping Details</AccordionTrigger>\r\n    <AccordionContent className=\"flex flex-col gap-4 text-balance\">\r\n      <p>\r\n        We offer worldwide shipping through trusted courier partners. Standard\r\n        delivery takes 3-5 business days, while express shipping ensures\r"
   },
   {
     "title": "Introduction",
     "excerpt": "Introduction to Our Documentation System\r\n\r\nWelcome to our modern documentation system built with MDX, ShadCN, and React!\r\n\r\n<Alert ty...",
     "path": "/getting-started\\introduction",
-    "category": "Guide",
+    "category": "Getting Started",
     "content": "\r\n# Introduction to Our Documentation System\r\n\r\nWelcome to our modern documentation system built with **MDX**, **ShadCN**, and **React**!\r\n\r\n<Alert type=\"info\" title=\"What is MDX?\">\r\n  MDX allows you to write JSX directly in your markdown files, enabling\r\n  interactive documentation.\r\n</Alert>\r\n\r\n## Features\r\n\r\n<FeatureGrid>\r\n  <Feature\r\n    title=\"Interactive Components\"\r\n    description=\"Use React components directly in your markdown\"\r\n    icon={<Button size=\"sm\">Click me</Button>}\r\n  />\r\n  <Feature\r\n    title=\"Beautiful Styling\"\r\n    description=\"Pre-built components with consistent design\"\r\n  />\r\n  <Feature\r\n    title=\"Fast Search\"\r\n    description=\"Quick content discovery with fuzzy search\"\r\n  />\r\n  <Feature\r\n    title=\"Mobile Responsive\"\r\n    description=\"Works perfectly on all devices\"\r\n  />\r\n</FeatureGrid>\r\n\r\n## Getting Started\r\n\r\n<Steps>\r\n  <Step>\r\n    **Install Dependencies** - Set up your project with the required packages\r\n    \r\n    <CodeBlock language=\"bash\">\r\nnpm install "
   },
   {
     "title": "Introduction to Our Documentation System",
     "excerpt": "Welcome to our modern documentation system built with MDX, ShadCN, and React!\r\n\r\n<Aler...",
     "path": "/getting-started\\introduction#introduction-to-our-documentation-system",
-    "category": "Guide",
+    "category": "Getting Started",
     "parentTitle": "Introduction"
   },
   {
     "title": "Features",
     "excerpt": "<FeatureGrid>\r\n  <Feature\r\n    title=\"Interactive Components\"\r\n    description=\"Use React componen...",
     "path": "/getting-started\\introduction#features",
-    "category": "Guide",
+    "category": "Getting Started",
     "parentTitle": "Introduction"
   },
   {
     "title": "Getting Started",
     "excerpt": "<Steps>\r\n  <Step>\r\n    Install Dependencies - Set up your project with the required packages...",
     "path": "/getting-started\\introduction#getting-started",
-    "category": "Guide",
+    "category": "Getting Started",
     "parentTitle": "Introduction"
   },
   {
     "title": "Welcome",
     "excerpt": "Welcome to Camie Docs\r\n\r\nThis is a simple MDX page to get started....",
     "path": "/",
-    "category": "Documentation",
+    "category": "Index.mdx",
     "content": "\r\n# Welcome to Camie Docs\r\n\r\nThis is a simple MDX page to get started.\r\n"
   },
   {
     "title": "Welcome to Camie Docs",
     "excerpt": "This is a simple MDX page to get started....",
     "path": "/#welcome-to-camie-docs",
-    "category": "Documentation",
+    "category": "Index.mdx",
     "parentTitle": "Welcome"
   }
 ]

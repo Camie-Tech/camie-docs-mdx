@@ -12,7 +12,7 @@ interface Message {
     pairId?: string; // Links user message with AI response
 }
 
-export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean; onClose: () => void; initialQuery?: string }) {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: "1",
@@ -26,6 +26,19 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
     const [isExpanded, setIsExpanded] = useState(false);
 
     const scrollRef = useRef<HTMLDivElement>(null);
+    const hasSentInitialRef = useRef(""); // Track sent queries
+
+    // Auto-send initial query
+    useEffect(() => {
+        if (isOpen && initialQuery && initialQuery !== hasSentInitialRef.current && !isLoading) {
+            hasSentInitialRef.current = initialQuery;
+            setInput(initialQuery); // Visual feedback
+            const timer = setTimeout(() => {
+                handleSend(initialQuery);
+            }, 500);
+            return () => clearTimeout(timer);
+        }
+    }, [isOpen, initialQuery]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -75,54 +88,64 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         });
     };
 
-    const handleSend = async () => {
-        if (!input.trim() || isLoading) return;
+    const handleSend = async (arg?: string | React.MouseEvent | React.KeyboardEvent) => {
+        // Determine the text to send: use arg if it's a string, otherwise use input state
+        let textToSend = (typeof arg === "string" ? arg : input).trim();
+        if (!textToSend) return;
+
+        // Determine if this is an "initial" auto-send to avoid duplicates
+        const isInitial = typeof arg === 'string' && arg === initialQuery;
 
         const userMessageId = Date.now().toString();
         const userMessage: Message = {
             id: userMessageId,
             role: "user",
-            content: input,
+            content: textToSend,
             timestamp: new Date(),
         };
 
         setMessages((prev) => [...prev, userMessage]);
-        const question = input;
-        setInput("");
+        setInput(""); // Clear input immediately
         setIsLoading(true);
 
         try {
-            // Use Gemini 2.0 Flash via standard fetch
             const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || window.localStorage.getItem("GEMINI_API_KEY") || "YOUR_API_KEY";
 
             if (GEMINI_API_KEY === "YOUR_API_KEY") {
                 throw new Error("Gemini API Key missing. Please provide VITE_GEMINI_API_KEY in your .env file.");
             }
-
             // 1. Generate Query Embedding for RAG
             const EMBEDDING_URL = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`;
+            const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
             const embResponse = await fetch(EMBEDDING_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    content: { parts: [{ text: question }] }
+                    content: { parts: [{ text: textToSend }] }
                 })
             });
             const embData = await embResponse.json();
-            const queryVector = embData.embedding.values;
+            const queryVector = embData.embedding?.values;
 
-            // 2. Search Vector Index for Global Context
-            const relevantDocs = await searchVectors(queryVector);
-            const globalContext = relevantDocs.map(doc => `[From ${doc.path}]: ${doc.content}`).join('\n\n');
+            let globalContext = "";
+            if (queryVector) {
+                // 2. Search Vector Index for Global Context
+                const relevantDocs = await searchVectors(queryVector);
+                globalContext = relevantDocs.map(doc => `[From ${doc.path}]: ${doc.content}`).join('\n\n');
+            } else {
+                console.error("Failed to generate embedding", embData);
+                globalContext = `No specific documentation context could be retrieved.`;
+            }
 
             // 3. Scrape current page context as fallback/secondary
             const currentPageContent = document.querySelector('article')?.innerText || "";
 
-            const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
             const prompt = `
         You are a helpful AI assistant for a technical documentation site.
         Answer the user's question accurately using the provided context from across the site.
+        
+        IMPORTANT: If the user sends a keyword or topic (e.g., "Introduction", "API"), assume they are asking for a summary or explanation of that topic. Do not say "You haven't asked a question".
         
         GLOBAL SITE CONTEXT:
         ${globalContext}
@@ -131,7 +154,7 @@ export function AIAssistant({ isOpen, onClose }: { isOpen: boolean; onClose: () 
         ${currentPageContent.slice(0, 5000)}
         
         USER QUESTION:
-        ${question}
+        ${textToSend}
       `;
 
             const response = await fetch(GEMINI_URL, {

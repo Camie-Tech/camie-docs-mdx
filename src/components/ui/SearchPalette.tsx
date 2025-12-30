@@ -19,7 +19,7 @@ interface SearchResult {
     content?: string;
 }
 
-export function SearchPalette({ isOpen, onClose, onAskAI }: { isOpen: boolean; onClose: () => void; onAskAI: () => void }) {
+export function SearchPalette({ isOpen, onClose, onAskAI }: { isOpen: boolean; onClose: () => void; onAskAI: (query?: string) => void }) {
     const [query, setQuery] = useState("");
     const [filter, setFilter] = useState<string | null>(null);
     const [selectedIndex, setSelectedIndex] = useState(0);
@@ -78,12 +78,14 @@ export function SearchPalette({ isOpen, onClose, onAskAI }: { isOpen: boolean; o
                 setSelectedIndex(prev => Math.max(prev - 1, 0));
             }
             if (e.key === "Enter") {
-                // Logic for selecting result or filter
+                if (selectedIndex === 0) {
+                    onAskAI(query);
+                }
             }
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [onClose, results, filters, query]);
+    }, [onClose, results, filters, query, selectedIndex, onAskAI]);
 
     if (!isOpen) return null;
 
@@ -127,7 +129,7 @@ export function SearchPalette({ isOpen, onClose, onAskAI }: { isOpen: boolean; o
 
                     {/* AI Search Mode - Always available as first option */}
                     <button
-                        onClick={onAskAI}
+                        onClick={() => onAskAI(query)}
                         className={cn(
                             "w-full flex items-center px-4 py-3.5 rounded-xl border transition-all duration-200 group text-left",
                             selectedIndex === 0 ? "bg-primary/10 border-primary/30 shadow-sm" : "bg-primary/5 border-primary/10 hover:bg-primary/10 hover:border-primary/20"

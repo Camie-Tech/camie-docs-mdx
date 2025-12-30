@@ -1,16 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Search, Menu, Github, Sun, Moon } from "lucide-react";
+import { Search, Menu, Github, Sun, Moon, Sparkles } from "lucide-react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { SearchPalette } from "@/components/ui/SearchPalette";
-import { AIAssistant } from "@/components/ui/AIAssistant";
+import { useAI } from "@/components/providers/AIProvider";
 import { useState, useEffect } from "react";
 
 export function Header() {
   const { isDark, toggleTheme } = useTheme();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isAIOpen, setIsAIOpen] = useState(false);
+  const { openAI } = useAI();
 
   useEffect(() => {
+    // ... (keep existing useEffect for K shortcut)
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
@@ -24,6 +25,7 @@ export function Header() {
   return (
     <header className="border-b bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-card/50">
       <div className="container flex h-14 items-center px-4">
+        {/* ... (keep existing logo/menu) */}
         <div className="flex items-center space-x-4">
           <Button variant="ghost" size="sm" className="md:hidden">
             <Menu className="h-5 w-5" />
@@ -46,19 +48,26 @@ export function Header() {
             </Button>
           </div>
 
+          <Button
+            variant="outline"
+            size="sm"
+            className="hidden md:flex items-center gap-2 h-9 text-primary border-primary/20 bg-primary/5 hover:bg-primary/10 hover:border-primary/40 transition-all shadow-sm"
+            onClick={() => openAI()}
+          >
+            <Sparkles className="h-4 w-4" />
+            <span className="font-semibold">Ask AI</span>
+          </Button>
+
           <SearchPalette
             isOpen={isSearchOpen}
             onClose={() => setIsSearchOpen(false)}
-            onAskAI={() => {
+            onAskAI={(query) => {
               setIsSearchOpen(false);
-              setIsAIOpen(true);
+              openAI(query);
             }}
           />
 
-          <AIAssistant
-            isOpen={isAIOpen}
-            onClose={() => setIsAIOpen(false)}
-          />
+          {/* AIAssistant Removed (Global instance used) */}
 
           <Button variant="ghost" size="sm" onClick={toggleTheme}>
             {isDark ? (
