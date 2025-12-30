@@ -64,12 +64,7 @@ function generateSearchIndex() {
     function getCategory(relativePath) {
         const part = relativePath.split(/[\\\/]/)[0];
 
-        // Manual overrides for specific folders
-        switch (part) {
-            case "getting-started": return "Guide";
-            case "api-reference": return "API";
-            case "changelog": return "Changelog";
-        }
+        // All categories are now derived dynamically from the folder name
 
         // Dynamic fallback: convert kebab-case or snake_case to Title Case
         return part

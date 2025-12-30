@@ -2,6 +2,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -13,7 +16,7 @@ const searchIndex = JSON.parse(
 // Filter out items without substantial content (to save tokens and focus on main content)
 const itemsToEmbed = searchIndex.filter(item => item.content && item.content.length > 50);
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
 const EMBEDDING_URL = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`;
 
 async function generateEmbedding(text) {
@@ -30,8 +33,9 @@ async function generateEmbedding(text) {
 
 async function main() {
     if (!GEMINI_API_KEY) {
-        console.error("❌ Error: GEMINI_API_KEY environment variable is missing.");
-        process.exit(1);
+        console.warn("⚠️ Warning: GEMINI_API_KEY environment variable is missing. Skipping embedding generation.");
+        console.warn("   This means the AI assistant will use existing vectors or have limited site-wide context.");
+        return;
     }
 
     console.log(`🚀 Starting embedding generation for ${itemsToEmbed.length} items...`);

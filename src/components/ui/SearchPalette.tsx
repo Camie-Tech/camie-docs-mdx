@@ -52,7 +52,7 @@ export function SearchPalette({ isOpen, onClose, onAskAI }: { isOpen: boolean; o
         const categories = Array.from(new Set(searchIndex.map(i => i.category)));
         return categories.map(cat => ({
             id: cat,
-            label: cat === "API" ? "API Reference" : cat + "s",
+            label: cat,
             count: searchIndex.filter(i => i.category === cat).length
         })).filter(f => f.count > 0);
     }, []);
