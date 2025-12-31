@@ -53,12 +53,13 @@ async function main() {
 
     console.log(`🚀 Starting embedding generation for ${itemsToEmbed.length} items...`);
 
-    // Load existing cache
-    const cachePath = path.join(__dirname, '../src/data/embedding-cache.json');
+    // Load existing cache from content directory (persists with client's repo)
+    const cachePath = path.join(__dirname, '../src/content/.embedding-cache.json');
     let embeddingCache = {};
     if (fs.existsSync(cachePath)) {
         try {
             embeddingCache = JSON.parse(fs.readFileSync(cachePath, 'utf8'));
+            console.log(`📦 Loaded cache with ${Object.keys(embeddingCache).length} entries`);
         } catch (e) {
             console.warn("⚠️ Failed to load embedding cache, starting fresh.");
         }
