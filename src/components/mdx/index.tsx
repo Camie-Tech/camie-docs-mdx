@@ -63,12 +63,10 @@ export const CodeBlock = ({
   language,
   title,
   children,
-  showLineNumbers = false,
 }: {
   language?: string;
   title?: string;
   children: string;
-  showLineNumbers?: boolean;
 }) => {
   const [copied, setCopied] = React.useState(false);
 
@@ -267,27 +265,27 @@ export const mdxComponents = {
   AccordionTrigger,
 
   // Enhanced HTML elements
-  h1: ({ children, ...props }) => (
+  h1: ({ children, ...props }: any) => (
     <h1 className="text-4xl font-bold mb-6 pb-2 border-b" {...props}>
       {children}
     </h1>
   ),
-  h2: ({ children, ...props }) => (
+  h2: ({ children, ...props }: any) => (
     <h2 className="text-3xl font-semibold mb-4 mt-8" {...props}>
       {children}
     </h2>
   ),
-  h3: ({ children, ...props }) => (
+  h3: ({ children, ...props }: any) => (
     <h3 className="text-2xl font-medium mb-3 mt-6" {...props}>
       {children}
     </h3>
   ),
-  p: ({ children, ...props }) => (
+  p: ({ children, ...props }: any) => (
     <p className="mb-4 leading-7" {...props}>
       {children}
     </p>
   ),
-  a: ({ children, href, ...props }) => (
+  a: ({ children, href, ...props }: any) => (
     <a
       href={href}
       className="text-blue-600 hover:text-blue-800 underline underline-offset-4"
@@ -296,17 +294,17 @@ export const mdxComponents = {
       {children}
     </a>
   ),
-  ul: ({ children, ...props }) => (
+  ul: ({ children, ...props }: any) => (
     <ul className="list-disc list-inside mb-4 space-y-1" {...props}>
       {children}
     </ul>
   ),
-  ol: ({ children, ...props }) => (
+  ol: ({ children, ...props }: any) => (
     <ol className="list-decimal list-inside mb-4 space-y-1" {...props}>
       {children}
     </ol>
   ),
-  blockquote: ({ children, ...props }) => (
+  blockquote: ({ children, ...props }: any) => (
     <blockquote
       className="border-l-4 border-gray-300 pl-4 italic my-4 text-gray-600"
       {...props}

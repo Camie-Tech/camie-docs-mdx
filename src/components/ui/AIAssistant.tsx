@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
-import { X, Send, Sparkles, Bot, User, Maximize2, Minimize2, ExternalLink, Hash, Trash2 } from "lucide-react";
+import { X, Send, Sparkles, Bot, User, Maximize2, Minimize2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { searchVectors } from "@/lib/vector-store";
 
@@ -11,6 +11,29 @@ interface Message {
     timestamp: Date;
     pairId?: string; // Links user message with AI response
 }
+
+export const CodeBlock = ({
+    language,
+    title,
+    children,
+}: {
+    language?: string;
+    title?: string;
+    children: string;
+    showLineNumbers?: boolean;
+}) => {
+    // This component is not fully implemented in the provided snippet,
+    // but it's added here as per the user's instruction.
+    // A full implementation would typically involve a syntax highlighter like react-syntax-highlighter.
+    return (
+        <pre className="bg-gray-800 text-white p-4 rounded-md text-sm overflow-x-auto my-4">
+            {title && <div className="text-gray-400 text-xs mb-2">{title}</div>}
+            <code className={`language-${language || 'plaintext'}`}>
+                {children}
+            </code>
+        </pre>
+    );
+};
 
 export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean; onClose: () => void; initialQuery?: string }) {
     const [messages, setMessages] = useState<Message[]>([
@@ -94,7 +117,7 @@ export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean
         if (!textToSend) return;
 
         // Determine if this is an "initial" auto-send to avoid duplicates
-        const isInitial = typeof arg === 'string' && arg === initialQuery;
+        // ... (comment out unused isInitial)
 
         const userMessageId = Date.now().toString();
         const userMessage: Message = {
@@ -109,28 +132,39 @@ export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean
         setIsLoading(true);
 
         try {
-            const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || window.localStorage.getItem("GEMINI_API_KEY") || "YOUR_API_KEY";
+            const PROJECT_ID = import.meta.env.VITE_PROJECT_ID;
+            const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
-            if (GEMINI_API_KEY === "YOUR_API_KEY") {
-                throw new Error("Gemini API Key missing. Please provide VITE_GEMINI_API_KEY in your .env file.");
+            if (!PROJECT_ID || !BACKEND_URL) {
+                console.error("Missing config:", { PROJECT_ID, BACKEND_URL });
+                throw new Error("Configuration missing. Please republish the site.");
             }
-            // 1. Generate Query Embedding for RAG
-            const EMBEDDING_URL = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`;
-            const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-            const embResponse = await fetch(EMBEDDING_URL, {
+            // 1. Generate Query Embedding via Proxy
+            const embResponse = await fetch(`${BACKEND_URL}/api/ai/proxy`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    content: { parts: [{ text: textToSend }] }
+                    projectId: PROJECT_ID,
+                    endpoint: "embedContent",
+                    payload: {
+                        content: { parts: [{ text: textToSend }] }
+                    }
                 })
             });
+
+            if (!embResponse.ok) {
+                const errorData = await embResponse.json();
+                throw new Error(errorData.error || "Failed to generate embedding");
+            }
+
             const embData = await embResponse.json();
             const queryVector = embData.embedding?.values;
 
             let globalContext = "";
             if (queryVector) {
-                // 2. Search Vector Index for Global Context
+                // 2. Search Vector Index (Client-side search)
+                // Note: The vector search is still client-side using the loaded vectors
                 const relevantDocs = await searchVectors(queryVector);
                 globalContext = relevantDocs.map(doc => `[From ${doc.path}]: ${doc.content}`).join('\n\n');
             } else {
@@ -138,7 +172,7 @@ export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean
                 globalContext = `No specific documentation context could be retrieved.`;
             }
 
-            // 3. Scrape current page context as fallback/secondary
+            // 3. Scrape current page context
             const currentPageContent = document.querySelector('article')?.innerText || "";
 
             const prompt = `
@@ -157,18 +191,23 @@ export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean
         ${textToSend}
       `;
 
-            const response = await fetch(GEMINI_URL, {
+            // 4. Generate Content via Proxy
+            const response = await fetch(`${BACKEND_URL}/api/ai/proxy`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
+                    projectId: PROJECT_ID,
+                    endpoint: "generateContent",
+                    payload: {
+                        contents: [{ parts: [{ text: prompt }] }]
+                    }
                 })
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                const errorMsg = data.error?.message || `API Error: ${response.status} ${response.statusText}`;
+                const errorMsg = data.error || `API Error: ${response.status}`;
                 throw new Error(errorMsg);
             }
 
@@ -181,7 +220,6 @@ export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean
                 timestamp: new Date(),
             };
 
-            // Link the user message to this AI response
             setMessages((prev) =>
                 prev.map((m) =>
                     m.id === userMessageId ? { ...m, pairId: aiMessage.id } : m
@@ -192,10 +230,10 @@ export function AIAssistant({ isOpen, onClose, initialQuery }: { isOpen: boolean
 
             let displayMessage = "Sorry, I'm having trouble connecting to the AI brain right now.";
 
-            if (error.message.includes("quota") || error.message.includes("429") || error.message.includes("limit")) {
-                displayMessage = "⚠️ Quota Exceeded: Your Gemini API free tier rate limit has been reached. Please wait a minute or use a different key.";
-            } else if (error.message.includes("API Key")) {
-                displayMessage = "🔑 API Key Missing: Please provide VITE_GEMINI_API_KEY in your .env file.";
+            if (error.message.includes("Configuration missing")) {
+                displayMessage = "⚠️ Site Configuration Missing: Please republish your project to enable AI features.";
+            } else if (error.message.includes("AI not configured")) {
+                displayMessage = "⚠️ AI Not Configured: The project owner needs to set a valid Gemini API key in the dashboard.";
             } else {
                 displayMessage = `❌ Error: ${error.message}`;
             }

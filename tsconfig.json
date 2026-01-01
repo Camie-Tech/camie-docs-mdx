@@ -11,18 +11,20 @@
   "compilerOptions": {
     "target": "ES2020",
     "useDefineForClassFields": true,
-    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2020",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "skipLibCheck": true,
-
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "jsx": "react-jsx",  // This is the key line!
-
+    "jsx": "react-jsx", // This is the key line!
     /* Linting */
     "strict": true,
     "noUnusedLocals": true,
@@ -30,8 +32,9 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-    "jsx": ["react-jsx"]
+      "@/*": [
+        "./src/*"
+      ]
     }
   }
 }

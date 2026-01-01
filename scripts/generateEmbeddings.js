@@ -10,30 +10,39 @@ const searchIndex = JSON.parse(
     fs.readFileSync(path.join(__dirname, '../src/data/search-index.json'), 'utf8')
 );
 
-// Filter out items without substantial content (to save tokens and focus on main content)
 const itemsToEmbed = searchIndex.filter(item => item.content && item.content.length > 50);
 
-const GEMINI_API_KEY = process.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
-const EMBEDDING_URL = `https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key=${GEMINI_API_KEY}`;
+const PROJECT_ID = process.env.VITE_PROJECT_ID || process.env.PROJECT_ID;
+const BACKEND_URL = process.env.VITE_BACKEND_URL || process.env.BACKEND_URL || 'https://camie-docs-backend.onrender.com';
+const PROXY_URL = `${BACKEND_URL}/api/ai/proxy`;
 
 async function generateEmbedding(text) {
     try {
-        const response = await fetch(EMBEDDING_URL, {
+        if (!PROJECT_ID) {
+            console.error("❌ Error: PROJECT_ID is required for AI Proxy");
+            return null;
+        }
+
+        const response = await fetch(PROXY_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-                content: { parts: [{ text }] }
+                projectId: PROJECT_ID,
+                endpoint: "embedContent",
+                payload: {
+                    content: { parts: [{ text }] }
+                }
             })
         });
         const data = await response.json();
 
         if (!response.ok) {
-            console.error(`❌ API Error (${response.status}):`, JSON.stringify(data, null, 2));
+            console.error(`❌ Proxy Error (${response.status}):`, JSON.stringify(data, null, 2));
             return null;
         }
 
         if (!data.embedding || !data.embedding.values) {
-            console.error("❌ Unexpected API Response Format:", JSON.stringify(data, null, 2));
+            console.error("❌ Unexpected Proxy Response Format:", JSON.stringify(data, null, 2));
             return null;
         }
 
@@ -45,9 +54,8 @@ async function generateEmbedding(text) {
 }
 
 async function main() {
-    if (!GEMINI_API_KEY) {
-        console.warn("⚠️ Warning: GEMINI_API_KEY environment variable is missing. Skipping embedding generation.");
-        console.warn("   This means the AI assistant will use existing vectors or have limited site-wide context.");
+    if (!PROJECT_ID || !BACKEND_URL) {
+        console.warn("⚠️ Warning: PROJECT_ID or BACKEND_URL is missing. Skipping embedding generation.");
         return;
     }
 

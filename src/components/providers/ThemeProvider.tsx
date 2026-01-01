@@ -25,12 +25,12 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 // 🎯 FIX: Load dark mode preference BEFORE rendering
 function getInitialDarkMode(): boolean {
   if (typeof window === "undefined") return false;
-  
+
   const saved = localStorage.getItem("theme-mode");
   if (saved) {
     return saved === "dark";
   }
-  
+
   // Check system preference
   return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
@@ -44,7 +44,6 @@ interface ThemeProviderProps {
 export function ThemeProvider({
   children,
   initialTheme,
-  defaultMode = "light",
 }: ThemeProviderProps) {
   const [themeConfig, setThemeConfig] = useState<ThemeConfig | null>(
     initialTheme || null
